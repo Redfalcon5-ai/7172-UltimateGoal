@@ -19,7 +19,6 @@ public class RobotHardware
     public Servo tilt = null;
     public Servo indexer = null;
     public DcMotorEx shooter1 = null;
-    public DcMotorEx shooter2 = null;
     public DigitalChannel touch = null;
     public DigitalChannel magnet = null;
     public NormalizedColorSensor colorv3 = null;
@@ -50,7 +49,6 @@ public class RobotHardware
         tilt = hwMap.get(Servo.class, "tilt");
         indexer = hwMap.get(Servo.class, "indexer");
         shooter1 = (DcMotorEx)hwMap.get(DcMotor.class, "shooter1");
-        shooter2 = (DcMotorEx)hwMap.get(DcMotor.class, "shooter2");
         touch = hwMap.get(DigitalChannel.class, "touch");
         magnet = hwMap.get(DigitalChannel.class, "magnet");
         colorv3 = hwMap.get(NormalizedColorSensor.class, "colorv3");
@@ -67,23 +65,21 @@ public class RobotHardware
         rb.setPower(0);
         intake.setPower(0);
         conveyor.setPower(0);
-        tilt.setPosition(0.564);
-        indexer.setPosition(0.5);
+        tilt.setPosition(0.66);
+        indexer.setPosition(0.85);
         shooter1.setPower(0);
-        shooter2.setPower(0);
         wobble.setPower(0);
         grabber.setPosition(0.5);
 
         // Set all motors to run without encoders
         //Set mode for sensors
-        lf.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        rf.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        lb.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        rb.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        lf.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rf.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        lb.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rb.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        shooter1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        shooter2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        wobble.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        shooter1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        wobble.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         touch.setMode(DigitalChannel.Mode.INPUT);
         magnet.setMode(DigitalChannel.Mode.INPUT);
 
@@ -91,6 +87,8 @@ public class RobotHardware
         rf.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         lb.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rb.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+
     }
 }
 

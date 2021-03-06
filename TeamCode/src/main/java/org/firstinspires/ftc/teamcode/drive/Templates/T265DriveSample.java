@@ -51,7 +51,6 @@ public class T265DriveSample extends LinearOpMode
         robot.rb.setDirection(DcMotorSimple.Direction.FORWARD);
         robot.lf.setDirection(DcMotorSimple.Direction.REVERSE);
         robot.lb.setDirection(DcMotorSimple.Direction.REVERSE);
-        robot.shooter2.setDirection(DcMotorSimple.Direction.REVERSE);
         robot.shooter1.setDirection(DcMotorSimple.Direction.REVERSE);
         robot.intake.setDirection(DcMotorSimple.Direction.FORWARD);
 
@@ -133,7 +132,6 @@ public class T265DriveSample extends LinearOpMode
 
             //Set Powers
             robot.conveyor.setPower(motorPow(conveyorPow));
-            robot.shooter2.setPower(motorPow(flyPow));
             robot.shooter1.setPower(motorPow(flyPow));
             robot.intake.setPower(motorPow(intakePow));
             robot.tilt.setPosition(linearPos);

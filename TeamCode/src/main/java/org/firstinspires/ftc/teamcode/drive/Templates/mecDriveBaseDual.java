@@ -2,8 +2,10 @@ package org.firstinspires.ftc.teamcode.drive.Templates;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.util.DualPad;
@@ -18,7 +20,7 @@ public class mecDriveBaseDual extends LinearOpMode
     DualPad gpad = new DualPad();
 
     //Create Variables for Motor/Servo Powers
-    double linearPos = 0.564;
+    double linearPos = 0.66;
     double intakePow = 0.0;
     double conveyorPow = 0.0;
     double flyPow = 0.0;
@@ -33,10 +35,13 @@ public class mecDriveBaseDual extends LinearOpMode
         robot.rb.setDirection(DcMotorSimple.Direction.FORWARD);
         robot.lf.setDirection(DcMotorSimple.Direction.REVERSE);
         robot.lb.setDirection(DcMotorSimple.Direction.REVERSE);
-        robot.shooter2.setDirection(DcMotorSimple.Direction.REVERSE);
         robot.shooter1.setDirection(DcMotorSimple.Direction.REVERSE);
         robot.intake.setDirection(DcMotorSimple.Direction.FORWARD);
-
+        robot.conveyor.setDirection(DcMotorSimple.Direction.REVERSE);
+        robot.shooter1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        robot.shooter1.setVelocityPIDFCoefficients(15,0.75,0,0);
+        robot.indexer.setDirection(Servo.Direction.REVERSE);
+        robot.tilt.setPosition(0.66);
 
         waitForStart();
 
@@ -54,9 +59,9 @@ public class mecDriveBaseDual extends LinearOpMode
             if (conveyorPow >= -1 && conveyorPow <= 1) {
                 conveyorPow = 0;
             }
-            if (flyPow >= -1 && flyPow <= 1) {
-                flyPow = 0;
-            }
+            //if (flyPow >= -1 && flyPow <= 1) {
+            //    flyPow = 0;
+            //}
             if (intakePow >= -1 && intakePow <= 1) {
                 intakePow = 0;
             }
@@ -67,8 +72,8 @@ public class mecDriveBaseDual extends LinearOpMode
 
             //Distance Sensor controls
             if (((DistanceSensor) robot.colorv3).getDistance(DistanceUnit.CM) < 4) {
-                flyPow = 2300;
-                conveyorPow = 2;
+                flyPow = -1600;
+                conveyorPow = -1.75;
             }
 
 
@@ -79,27 +84,18 @@ public class mecDriveBaseDual extends LinearOpMode
                 robot.grabber.setPosition(0.025);
             }
             if (gpad.aShift) {
-                grabberPow = 1000;
+                grabberPow = 750;
             }
             if (gpad.b) {
                 robot.grabber.setPosition(0.5);
             }
             if (gpad.bShift) {
-                grabberPow = -1000;
+                grabberPow = -750;
             }
 
-            //Bumper and Magnet Switch Controls
-            if (gpad.right_bumperShift) {
-                robot.indexer.setPosition(0.75);
-            }
-            else if (gpad.right_bumper) {
-                robot.indexer.setPosition(0.25);
-            }
-            else if (robot.magnet.getState() == false) {
-                robot.indexer.setPosition(0.5);
-            }
-
-
+            //Bumper and Touch Switch Controls
+            double indexerPos = 0.85;
+            if (gpad.right_bumper) indexerPos = 0.5;
 
             //D-pad Controls
             if (gpad.dpad_up && linearPos < 0.9) {
@@ -109,46 +105,46 @@ public class mecDriveBaseDual extends LinearOpMode
                 linearPos = linearPos - 0.001;
             }
             if (gpad.dpad_left) {
-                linearPos = 0.584;
+                linearPos = 0.742;
             }
             if (gpad.dpad_right) {
-                linearPos = 0.564;
+                linearPos = 0.672;
             }
 
             //Unlatch
             if (gpad.x) {
                 flyPow = 0;
+                conveyorPow = 0;
             }
             if (gpad.xShift) {
-                flyPow = 2300;
-                conveyorPow = 2;
+                flyPow = -1600;
+                conveyorPow = -1.75;
             }
 
             //Trigger Controls
             if (gamepad1.right_trigger > 0) {
-                intakePow = 1;
-                if(conveyorPow != 2){
-                    conveyorPow = 1;
+                intakePow = -1;
+                if(conveyorPow != -1.75){
+                    conveyorPow = -0.75;
                 }
             }
             if (gamepad1.left_trigger > 0) {
-                intakePow = -1;
-                if(conveyorPow != 2){
-                    conveyorPow = -1;
+                intakePow = 1;
+                if(conveyorPow != -1.75){
+                    conveyorPow = 0.75;
                 }
             }
 
             //Set Powers
             robot.conveyor.setPower(motorPow(conveyorPow));
-            robot.shooter2.setVelocity(flyPow);
             robot.shooter1.setVelocity(flyPow);
             robot.intake.setPower(motorPow(intakePow));
             robot.wobble.setVelocity(grabberPow);
             robot.tilt.setPosition(linearPos);
+            robot.indexer.setPosition(indexerPos);
 
             telemetry.addData("TiltPos", linearPos);
-            telemetry.addData("Shooter1", robot.shooter1.getVelocity());
-            telemetry.addData("Shooter2", robot.shooter2.getVelocity());
+            telemetry.addData("This is new code", robot.shooter1.getVelocity());
 
             telemetry.update();
         }

@@ -58,7 +58,6 @@ public class PVCRedAuton extends LinearOpMode
         robot.rb.setDirection(DcMotorSimple.Direction.FORWARD);
         robot.lf.setDirection(DcMotorSimple.Direction.REVERSE);
         robot.lb.setDirection(DcMotorSimple.Direction.REVERSE);
-        robot.shooter2.setDirection(DcMotorSimple.Direction.REVERSE);
         robot.shooter1.setDirection(DcMotorSimple.Direction.REVERSE);
         robot.intake.setDirection(DcMotorSimple.Direction.FORWARD);
         robot.grabber.setPosition(0.025);
@@ -114,7 +113,6 @@ public class PVCRedAuton extends LinearOpMode
 
         //Aim and bring flywheel up to speed
         robot.shooter1.setVelocity(2300);
-        robot.shooter2.setVelocity(2300);
         robot.intake.setPower(1);
         robot.conveyor.setPower(1);
         sleep(2000);
@@ -172,7 +170,6 @@ public class PVCRedAuton extends LinearOpMode
         //Wait for 1 more second to ensure third ring has been shot
         sleep(1000);
         robot.shooter1.setVelocity(0);
-        robot.shooter2.setVelocity(0);
         robot.intake.setPower(0);
         robot.conveyor.setPower(0);
 

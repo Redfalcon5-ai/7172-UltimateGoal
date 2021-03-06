@@ -36,7 +36,6 @@ public class mecTeleOpPVC extends LinearOpMode
         robot.rb.setDirection(DcMotorSimple.Direction.FORWARD);
         robot.lf.setDirection(DcMotorSimple.Direction.REVERSE);
         robot.lb.setDirection(DcMotorSimple.Direction.REVERSE);
-        robot.shooter2.setDirection(DcMotorSimple.Direction.REVERSE);
         robot.shooter1.setDirection(DcMotorSimple.Direction.REVERSE);
         robot.intake.setDirection(DcMotorSimple.Direction.FORWARD);
 
@@ -144,7 +143,6 @@ public class mecTeleOpPVC extends LinearOpMode
 
             //Set Powers
             robot.conveyor.setPower(motorPow(conveyorPow));
-            robot.shooter2.setVelocity(flyPow);
             robot.shooter1.setVelocity(flyPow);
             robot.intake.setPower(motorPow(intakePow));
             robot.wobble.setVelocity(grabberPow);
@@ -152,7 +150,6 @@ public class mecTeleOpPVC extends LinearOpMode
 
             telemetry.addData("TiltPos", linearPos);
             telemetry.addData("Shooter1", robot.shooter1.getVelocity());
-            telemetry.addData("Shooter2", robot.shooter2.getVelocity());
 
             telemetry.update();
         }

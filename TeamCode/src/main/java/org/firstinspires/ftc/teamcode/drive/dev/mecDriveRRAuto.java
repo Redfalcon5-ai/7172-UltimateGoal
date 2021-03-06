@@ -1,47 +1,29 @@
-/* Copyright (c) 2019 FIRST. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted (subject to the limitations in the disclaimer below) provided that
- * the following conditions are met:
- *
- * Redistributions of source code must retain the above copyright notice, this list
- * of conditions and the following disclaimer.
- *
- * Redistributions in binary form must reproduce the above copyright notice, this
- * list of conditions and the following disclaimer in the documentation and/or
- * other materials provided with the distribution.
- *
- * Neither the name of FIRST nor the names of its contributors may be used to endorse or
- * promote products derived from this software without specific prior written permission.
- *
- * NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY THIS
- * LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+package org.firstinspires.ftc.teamcode.drive.dev;
 
-package org.firstinspires.ftc.robotcontroller.external.samples;
-
+import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
 import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.util.DualPad;
+import org.firstinspires.ftc.teamcode.util.RingDeterminationPipeline;
+import org.firstinspires.ftc.teamcode.util.RobotHardware;
+import org.openftc.easyopencv.OpenCvCamera;
+import org.openftc.easyopencv.OpenCvCameraFactory;
+import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,49 +34,27 @@ import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.YZX;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
 import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection.BACK;
 
-/**
- * This 2020-2021 OpMode illustrates the basics of using the Vuforia localizer to determine
- * positioning and orientation of robot on the ULTIMATE GOAL FTC field.
- * The code is structured as a LinearOpMode
- *
- * When images are located, Vuforia is able to determine the position and orientation of the
- * image relative to the camera.  This sample code then combines that information with a
- * knowledge of where the target images are on the field, to determine the location of the camera.
- *
- * From the Audience perspective, the Red Alliance station is on the right and the
- * Blue Alliance Station is on the left.
+@Disabled
+@TeleOp(name="mecDriveRRAuto", group="Linear Opmode")
+public class mecDriveRRAuto extends LinearOpMode
+{
+    //Create Robot Hardware Object
+    RobotHardware robot = new RobotHardware();
+    DualPad gpad = new DualPad();
 
- * There are a total of five image targets for the ULTIMATE GOAL game.
- * Three of the targets are placed in the center of the Red Alliance, Audience (Front),
- * and Blue Alliance perimeter walls.
- * Two additional targets are placed on the perimeter wall, one in front of each Tower Goal.
- * Refer to the Field Setup manual for more specific location details
- *
- * A final calculation then uses the location of the camera on the robot to determine the
- * robot's location and orientation on the field.
- *
- * @see VuforiaLocalizer
- * @see VuforiaTrackableDefaultListener
- * see  ultimategoal/doc/tutorial/FTC_FieldCoordinateSystemDefinition.pdf
- *
- * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list.
- *
- * IMPORTANT: In order to use this OpMode, you need to obtain your own Vuforia license key as
- * is explained below.
- */
+    //Create Variables for Motor/Servo Powers
+    double linearPos = 0.564;
+    double intakePow = 0.0;
+    double conveyorPow = 0.0;
+    double flyPow = 0.0;
+    double grabberPow = 0.0;
 
+    //OpenCV stuff
+    RingDeterminationPipeline rings   = new RingDeterminationPipeline();
+    RingDeterminationPipeline.SkystoneDeterminationPipeline pipeline = new RingDeterminationPipeline.SkystoneDeterminationPipeline();
+    OpenCvCamera webcam;
 
-@TeleOp(name="ULTIMATEGOAL Vuforia Nav Webcam", group ="Concept")
-
-public class ConceptVuforiaUltimateGoalNavigationWebcam extends LinearOpMode {
-
-    /*
-     * IMPORTANT: You need to obtain your own license key to use Vuforia. The string below with which
-     * 'parameters.vuforiaLicenseKey' is initialized is for illustration only, and will not function.
-     * A Vuforia 'Development' license key, can be obtained free of charge from the Vuforia developer
-     * web site at https://developer.vuforia.com/license-manager.
-     */
+    //Vuforia Stuff
     private static final VuforiaLocalizer.CameraDirection CAMERA_CHOICE = BACK;
     private static final boolean PHONE_IS_PORTRAIT = false  ;
     private static final String VUFORIA_KEY =
@@ -110,14 +70,34 @@ public class ConceptVuforiaUltimateGoalNavigationWebcam extends LinearOpMode {
     private float phoneXRotate    = 0;
     private float phoneYRotate    = 0;
     private float phoneZRotate    = 0;
+    List<VuforiaTrackable> allTrackables;
 
     double Y = 0;
     double X = 0;
     double Heading = 0;
 
-    @Override public void runOpMode() {
-        webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
+    @Override
+    public void runOpMode() {
+        //Start OpenCV
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
+        pipeline = new RingDeterminationPipeline.SkystoneDeterminationPipeline();
+        webcam.setPipeline(pipeline);
+        webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+                                         @Override
+                                         public void onOpened() {
+
+                                             webcam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+                                         }
+                                     }
+        );
+
+        //Set RR start Pose
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        com.acmerobotics.roadrunner.geometry.Pose2d startPose = new com.acmerobotics.roadrunner.geometry.Pose2d(-61.5, -32.5, Math.toRadians(0));
+        drive.setPoseEstimate(startPose);
+
+        webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
         parameters.vuforiaLicenseKey = VUFORIA_KEY;
         parameters.cameraName = webcamName;
@@ -134,7 +114,7 @@ public class ConceptVuforiaUltimateGoalNavigationWebcam extends LinearOpMode {
         blueAllianceTarget.setName("Blue Alliance Target");
         VuforiaTrackable frontWallTarget = targetsUltimateGoal.get(4);
         frontWallTarget.setName("Front Wall Target");
-        List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
+        allTrackables = new ArrayList<VuforiaTrackable>();
         allTrackables.addAll(targetsUltimateGoal);
         redAllianceTarget.setLocation(OpenGLMatrix
                 .translation(0, -halfField, mmTargetHeight)
@@ -170,16 +150,139 @@ public class ConceptVuforiaUltimateGoalNavigationWebcam extends LinearOpMode {
         final float CAMERA_VERTICAL_DISPLACEMENT = 8.0f * mmPerInch;   // eg: Camera is 8 Inches above ground
         final float CAMERA_LEFT_DISPLACEMENT     = 0;     // eg: Camera is ON the robot's center line
         OpenGLMatrix robotFromCamera = OpenGLMatrix
-                    .translation(CAMERA_FORWARD_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT)
-                    .multiplied(Orientation.getRotationMatrix(EXTRINSIC, YZX, DEGREES, phoneYRotate, phoneZRotate, phoneXRotate));
+                .translation(CAMERA_FORWARD_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT)
+                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, YZX, DEGREES, phoneYRotate, phoneZRotate, phoneXRotate));
         for (VuforiaTrackable trackable : allTrackables) {
             ((VuforiaTrackableDefaultListener) trackable.getListener()).setPhoneInformation(robotFromCamera, parameters.cameraDirection);
         }
 
-        waitForStart();
 
+        //Initialize Hardware and reverse motors
+        telemetry.addData("Status", "Initialized");
+        robot.init(hardwareMap);
+        robot.rf.setDirection(DcMotorSimple.Direction.FORWARD);
+        robot.rb.setDirection(DcMotorSimple.Direction.FORWARD);
+        robot.lf.setDirection(DcMotorSimple.Direction.REVERSE);
+        robot.lb.setDirection(DcMotorSimple.Direction.REVERSE);
+        robot.shooter1.setDirection(DcMotorSimple.Direction.REVERSE);
+        robot.intake.setDirection(DcMotorSimple.Direction.FORWARD);
+        robot.conveyor.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        // Set your initial pose to x: 10, y: 10, facing 90 degrees
+        drive.setPoseEstimate(new Pose2d(-61.5, -32.5, Math.toRadians(0)));
+
+        waitForStart();
         targetsUltimateGoal.activate();
-        while (!isStopRequested()) {
+
+        while(opModeIsActive()) {
+            gpad.mergePads(gamepad1, gamepad2);
+
+
+            //Driving Controls
+            double leftStickY = -gpad.left_stick_y; //Forward and Backward
+            double rightStickY = -gpad.right_stick_y;   //Forward and Backward
+            double leftStickX = gpad.left_stick_x;  //Turning
+            double rightStickX = gpad.right_stick_x;    //Strafing
+            mecDrive(leftStickY, rightStickY, leftStickX, rightStickX);
+
+            //Latch Controls
+            if (conveyorPow >= -1 && conveyorPow <= 1) {
+                conveyorPow = 0;
+            }
+            //if (flyPow >= -1 && flyPow <= 1) {
+            //    flyPow = 0;
+            //}
+            if (intakePow >= -1 && intakePow <= 1) {
+                intakePow = 0;
+            }
+            if (true) {
+                grabberPow = 0;
+            }
+
+
+            //Distance Sensor controls
+            if (((DistanceSensor) robot.colorv3).getDistance(DistanceUnit.CM) < 4) {
+                flyPow = -2000;
+                conveyorPow = -1.75;
+            }
+
+
+
+            //Button Controls
+
+            if (gpad.a) {
+                robot.grabber.setPosition(0.025);
+            }
+            if (gpad.aShift) {
+                grabberPow = 750;
+            }
+            if (gpad.b) {
+                robot.grabber.setPosition(0.5);
+            }
+            if (gpad.bShift) {
+                grabberPow = -750;
+            }
+
+            //Bumper and Touch Switch Controls
+            if (gpad.right_bumperShift) {
+                robot.indexer.setPosition(0.75);
+            }
+            else if (gpad.right_bumper){
+                robot.indexer.setPosition(0.25);
+            }
+            if(robot.touch.getState() == false){
+                robot.indexer.setPosition(0.5);
+            }
+
+            //(robot.touch.getState() == false)
+
+            //D-pad Controls
+            if (gpad.dpad_up && linearPos < 0.9) {
+                linearPos = linearPos + 0.001;
+            }
+            if (gpad.dpad_down && linearPos > 0.1) {
+                linearPos = linearPos - 0.001;
+            }
+            if (gpad.dpad_left) {
+                linearPos = 0.584;
+            }
+            if (gpad.dpad_right) {
+                linearPos = 0.564;
+            }
+
+            //Unlatch
+            if (gpad.x) {
+                flyPow = 0;
+                conveyorPow = 0;
+            }
+            if (gpad.xShift) {
+                flyPow = -2000;
+                conveyorPow = -1.75;
+            }
+
+            //Trigger Controls
+            if (gamepad1.right_trigger > 0) {
+                intakePow = -1;
+                if(conveyorPow != -1.75){
+                    conveyorPow = -0.75;
+                }
+            }
+            if (gamepad1.left_trigger > 0) {
+                intakePow = 1;
+                if(conveyorPow != -1.75){
+                    conveyorPow = 0.75;
+                }
+            }
+
+            //Set Powers
+            robot.conveyor.setPower(motorPow(conveyorPow));
+            robot.shooter1.setVelocity(flyPow);
+            robot.intake.setPower(motorPow(intakePow));
+            robot.wobble.setVelocity(grabberPow);
+            robot.tilt.setPosition(linearPos);
+
+            drive.update();
+            Pose2d myPose = drive.getPoseEstimate();
 
             // check all the trackable targets to see which one (if any) is visible.
             targetVisible = false;
@@ -214,14 +317,48 @@ public class ConceptVuforiaUltimateGoalNavigationWebcam extends LinearOpMode {
                 telemetry.addData("Rot (deg)", "{Roll, Pitch, Heading} = %.0f, %.0f, %.0f", rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle);
                 Heading = rotation.thirdAngle - 90;
                 telemetry.addData("heading", Heading);
+
+                drive.setPoseEstimate(new Pose2d(X, Y, Heading));
             }
             else {
                 telemetry.addData("Visible Target", "none");
             }
+
+            telemetry.addData("x", myPose.getX());
+            telemetry.addData("y", myPose.getY());
+            telemetry.addData("heading", myPose.getHeading());
+
             telemetry.update();
         }
-
-        // Disable Tracking when we are done;
         targetsUltimateGoal.deactivate();
     }
+
+    //Method for Mecanum Drive
+    public void mecDrive(double forward, double forward2, double turn, double strafe) {
+        robot.lf.setPower(forward + forward2 + turn + strafe);
+        robot.rf.setPower(forward + forward2 - turn - strafe);
+        robot.lb.setPower(forward + forward2 + turn - strafe);
+        robot.rb.setPower(forward + forward2 - turn + strafe);
+    }
+
+    //Method to get motor powers
+    public double motorPow(double x){
+        if(x>1){
+            return x-1;
+        }
+        if(x<-1){
+            return x+1;
+        }
+        return x;
+    }
+
+    //Method to get servo powers
+    public double servoPow(double x){
+        return (motorPow(x)*0.4) + 0.5;
+    }
+
 }
+
+
+
+

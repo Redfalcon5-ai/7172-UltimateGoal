@@ -17,8 +17,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.util.RobotHardware;
 
 @Disabled
-@TeleOp(name="autoTargetTest", group="Linear Opmode")
-public class autoTargetTest extends LinearOpMode
+@TeleOp(name="T265AutoTarget", group="Linear Opmode")
+public class T265AutoTarget extends LinearOpMode
 {
     //Create Robot Hardware and Elapsed Time Objects
     RobotHardware robot = new RobotHardware();
@@ -57,7 +57,6 @@ public class autoTargetTest extends LinearOpMode
         robot.rb.setDirection(DcMotorSimple.Direction.FORWARD);
         robot.lf.setDirection(DcMotorSimple.Direction.REVERSE);
         robot.lb.setDirection(DcMotorSimple.Direction.REVERSE);
-        robot.shooter2.setDirection(DcMotorSimple.Direction.REVERSE);
         robot.shooter1.setDirection(DcMotorSimple.Direction.REVERSE);
         robot.intake.setDirection(DcMotorSimple.Direction.FORWARD);
 
@@ -147,7 +146,6 @@ public class autoTargetTest extends LinearOpMode
 
             //Set Powers
             robot.conveyor.setPower(motorPow(conveyorPow));
-            robot.shooter2.setPower(motorPow(flyPow));
             robot.shooter1.setPower(motorPow(flyPow));
             robot.intake.setPower(motorPow(intakePow));
             robot.tilt.setPosition(linearPos);

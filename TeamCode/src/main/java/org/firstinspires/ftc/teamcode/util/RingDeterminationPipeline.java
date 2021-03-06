@@ -64,13 +64,13 @@ public class RingDeterminationPipeline extends LinearOpMode
         static final Scalar BLUE = new Scalar(0, 0, 255);
         static final Scalar GREEN = new Scalar(0, 255, 0);
 
-        static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(85, 145);
+        static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(105, 145);
 
         static final int REGION_WIDTH = 35;
         static final int REGION_HEIGHT = 45;
 
-        final int FOUR_RING_THRESHOLD = 145;
-        final int ONE_RING_THRESHOLD = 135;
+        final int FOUR_RING_THRESHOLD = 135;
+        final int ONE_RING_THRESHOLD = 126;
 
         Point region1_pointA = new Point(
                 REGION1_TOPLEFT_ANCHOR_POINT.x,
@@ -116,9 +116,9 @@ public class RingDeterminationPipeline extends LinearOpMode
                     2);
 
             position = RingPosition.FOUR;
-            if (avg1 > FOUR_RING_THRESHOLD) {
+            if (avg1 >= FOUR_RING_THRESHOLD) {
                 position = RingPosition.FOUR;
-            } else if (avg1 > ONE_RING_THRESHOLD) {
+            } else if (avg1 >= ONE_RING_THRESHOLD) {
                 position = RingPosition.ONE;
             } else {
                 position = RingPosition.NONE;

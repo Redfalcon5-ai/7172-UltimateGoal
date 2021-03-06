@@ -11,7 +11,7 @@ import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 
 
-@TeleOp(name="RingDetector", group="LinearOpmode")
+@TeleOp(name="RingDetectorSample", group="LinearOpmode")
 
 public class RingDetectorSample extends LinearOpMode {
 
@@ -47,7 +47,6 @@ public class RingDetectorSample extends LinearOpMode {
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
-
 
 
 
