@@ -66,7 +66,7 @@ public class RobotHardware
         intake.setPower(0);
         conveyor.setPower(0);
         tilt.setPosition(0.66);
-        indexer.setPosition(0.85);
+        indexer.setPosition(0.5);
         shooter1.setPower(0);
         wobble.setPower(0);
         grabber.setPosition(0.5);

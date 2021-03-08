@@ -64,13 +64,13 @@ public class RingDeterminationPipeline extends LinearOpMode
         static final Scalar BLUE = new Scalar(0, 0, 255);
         static final Scalar GREEN = new Scalar(0, 255, 0);
 
-        static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(105, 145);
+        static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(145, 150);
 
         static final int REGION_WIDTH = 35;
         static final int REGION_HEIGHT = 45;
 
         final int FOUR_RING_THRESHOLD = 135;
-        final int ONE_RING_THRESHOLD = 126;
+        final int ONE_RING_THRESHOLD = 120;
 
         Point region1_pointA = new Point(
                 REGION1_TOPLEFT_ANCHOR_POINT.x,
