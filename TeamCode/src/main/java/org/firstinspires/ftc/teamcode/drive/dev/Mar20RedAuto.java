@@ -13,6 +13,7 @@ import com.arcrobotics.ftclib.geometry.Translation2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.spartronics4915.lib.T265Camera;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -44,6 +45,7 @@ public class Mar20RedAuto extends LinearOpMode
         robot.shooter1.setDirection(DcMotorSimple.Direction.REVERSE);
         robot.intake.setDirection(DcMotorSimple.Direction.FORWARD);
         robot.conveyor.setDirection(DcMotorSimple.Direction.REVERSE);
+        robot.indexer.setDirection(Servo.Direction.REVERSE);
         robot.grabber.setPosition(0);
         robot.tilt.setPosition(0.63);
 
@@ -137,7 +139,7 @@ public class Mar20RedAuto extends LinearOpMode
         //One ring trajectories
         Trajectory one1 = drive.trajectoryBuilder(move2.end())
                 .lineToLinearHeading(
-                        new com.acmerobotics.roadrunner.geometry.Pose2d(24, -50, Math.toRadians(0)),
+                        new com.acmerobotics.roadrunner.geometry.Pose2d(22, -47, Math.toRadians(0)),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -189,7 +191,7 @@ public class Mar20RedAuto extends LinearOpMode
 
         Trajectory one5 = drive.trajectoryBuilder(one4.end())
                 .lineToLinearHeading(
-                        new com.acmerobotics.roadrunner.geometry.Pose2d(-32, -59, Math.toRadians(0)),
+                        new com.acmerobotics.roadrunner.geometry.Pose2d(-32, -61, Math.toRadians(0)),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -236,7 +238,7 @@ public class Mar20RedAuto extends LinearOpMode
                 .build();
 
         Trajectory four2 = drive.trajectoryBuilder(four1.end())
-                .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(-35, -54, Math.toRadians(0)))
+                .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(-35, -58, Math.toRadians(0)))
                 .build();
 
         Trajectory four3 = drive.trajectoryBuilder(four2.end())
@@ -245,7 +247,7 @@ public class Mar20RedAuto extends LinearOpMode
 
         Trajectory four4 = drive.trajectoryBuilder(four3.end())
                 .lineToLinearHeading(
-                        new com.acmerobotics.roadrunner.geometry.Pose2d(-36, -35, Math.toRadians(10)),
+                        new com.acmerobotics.roadrunner.geometry.Pose2d(-36, -40, Math.toRadians(5)),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -258,11 +260,11 @@ public class Mar20RedAuto extends LinearOpMode
 
         Trajectory four5 = drive.trajectoryBuilder(four4.end())
                 .lineToLinearHeading(
-                        new com.acmerobotics.roadrunner.geometry.Pose2d(-12, -35, Math.toRadians(0)),
+                        new com.acmerobotics.roadrunner.geometry.Pose2d(-12, -40, Math.toRadians(5)),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
-                                        new MecanumVelocityConstraint(20, DriveConstants.TRACK_WIDTH)
+                                        new MecanumVelocityConstraint(10, DriveConstants.TRACK_WIDTH)
                                 )
                         ),
                         new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL)
@@ -277,62 +279,83 @@ public class Mar20RedAuto extends LinearOpMode
                 .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(39, -47, Math.toRadians(0)))
                 .build();
 
-        robot.indexer.setPosition(0.5);
+        robot.indexer.setPosition(0.85);
 
+        int rings = 0;
+        boolean ringsSet = false;
+        while(!opModeIsActive() && !isStopRequested()){
+            if(gamepad1.x){
+                rings = 0;
+                ringsSet = true;
+            }
+            if(gamepad1.y){
+                rings = 1;
+                ringsSet = true;
+            }
+            if(gamepad1.b){
+                rings = 4;
+                ringsSet = true;
+            }
+            if(gamepad1.a){
+                ringsSet = false;
+            }
 
-        telemetry.addData("Rings", pipeline.position);
-        telemetry.update();
+            if(pipeline.position == RingDeterminationPipeline.SkystoneDeterminationPipeline.RingPosition.FOUR && !ringsSet){
+                rings = 4;
+            }
+            else if(pipeline.position == RingDeterminationPipeline.SkystoneDeterminationPipeline.RingPosition.ONE && !ringsSet){
+                rings = 1;
+            }
+            else if(pipeline.position == RingDeterminationPipeline.SkystoneDeterminationPipeline.RingPosition.NONE && !ringsSet){
+                rings = 0;
+            }
+
+            telemetry.addData("Rings", pipeline.position);
+            telemetry.addData("Auto Path", rings);
+            telemetry.update();
+        }
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
 
         //Determine the number of rings in the starter stack
-        int rings = 0;
 
-        if(pipeline.position == RingDeterminationPipeline.SkystoneDeterminationPipeline.RingPosition.FOUR){
-            rings = 4;
-        }
-        else if(pipeline.position == RingDeterminationPipeline.SkystoneDeterminationPipeline.RingPosition.ONE){
-            rings = 1;
-        }
-        else if(pipeline.position == RingDeterminationPipeline.SkystoneDeterminationPipeline.RingPosition.NONE){
-            rings = 0;
-        }
 
-        robot.shooter1.setVelocity(-1600);
-        robot.conveyor.setPower(-0.75);
-        robot.indexer.setPosition(0.5);
+
+
+        robot.shooter1.setVelocity(-1700);
+        robot.conveyor.setPower(-1);
+        robot.indexer.setPosition(0.85);
 
 
         drive.followTrajectory(move1);
         drive.followTrajectory(move2);
 
-
-
+        sleep(500);
 
         //Shot 1
-        robot.indexer.setPosition(0.85);
-        sleep(250);
         robot.indexer.setPosition(0.5);
+        sleep(250);
+        robot.indexer.setPosition(0.85);
+        robot.conveyor.setPower(-1);
 
         sleep(1500);
 
         //Shot 2
-        robot.indexer.setPosition(0.85);
-        sleep(250);
         robot.indexer.setPosition(0.5);
+        sleep(250);
+        robot.indexer.setPosition(0.85);
 
-        robot.conveyor.setPower(-1);
-        sleep(1000);
+        sleep(1500);
 
         //Shot 3
-        robot.indexer.setPosition(0.85);
-        sleep(500);
         robot.indexer.setPosition(0.5);
+        sleep(500);
+        robot.indexer.setPosition(0.85);
         sleep(1000);
 
         robot.shooter1.setVelocity(0);
-        robot.conveyor.setPower(0);
+        robot.conveyor.setPower(-1);
 
 
         if (rings == 0){
@@ -377,14 +400,14 @@ public class Mar20RedAuto extends LinearOpMode
             robot.shooter1.setVelocity(-1600);
             drive.followTrajectory(one6);
 
-            robot.indexer.setPosition(1);
-            sleep(300);
             robot.indexer.setPosition(0.5);
+            sleep(300);
+            robot.indexer.setPosition(0.85);
 
 
             drive.followTrajectory(one7);
             robot.shooter1.setVelocity(0);
-            robot.conveyor.setPower(0);
+            robot.conveyor.setPower(-1);
             robot.grabber.setPosition(0.5);
             sleep(1000);
             drive.followTrajectory(one8);
@@ -406,36 +429,37 @@ public class Mar20RedAuto extends LinearOpMode
             sleep(500);
             drive.followTrajectory(four3);
             robot.intake.setPower(-0.75);
-            robot.conveyor.setPower(-0.75);
-            robot.shooter1.setVelocity(-2000);
+            robot.conveyor.setPower(-1);
+
             drive.followTrajectory(four4);
-
-            sleep(2000);
-
-            robot.indexer.setPosition(1);
-            sleep(500);
-            robot.indexer.setPosition(0.5);
-
-            drive.followTrajectory(four5);
+            robot.shooter1.setVelocity(-1700);
 
             sleep(1000);
 
-            robot.indexer.setPosition(1);
-            sleep(500);
             robot.indexer.setPosition(0.5);
+            sleep(500);
+            robot.indexer.setPosition(0.85);
 
+            drive.followTrajectory(four5);
 
             sleep(500);
 
-            robot.indexer.setPosition(1);
-            sleep(500);
             robot.indexer.setPosition(0.5);
+            sleep(500);
+            robot.indexer.setPosition(0.85);
+
 
             sleep(500);
 
-            robot.indexer.setPosition(1);
-            sleep(500);
             robot.indexer.setPosition(0.5);
+            sleep(500);
+            robot.indexer.setPosition(0.85);
+
+            sleep(500);
+
+            robot.indexer.setPosition(0.5);
+            sleep(500);
+            robot.indexer.setPosition(0.85);
 
             drive.followTrajectory(four6);
             robot.grabber.setPosition(0.5);

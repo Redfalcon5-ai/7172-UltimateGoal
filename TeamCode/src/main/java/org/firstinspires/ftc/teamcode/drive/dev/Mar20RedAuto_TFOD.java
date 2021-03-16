@@ -60,11 +60,6 @@ public class Mar20RedAuto_TFOD extends LinearOpMode
     double bottom;
     double top;
 
-    //OpenCV stuff
-    RingDeterminationPipeline rings   = new RingDeterminationPipeline();
-    RingDeterminationPipeline.SkystoneDeterminationPipeline pipeline = new RingDeterminationPipeline.SkystoneDeterminationPipeline();
-    OpenCvCamera webcam;
-
     @Override
     public void runOpMode() {
         //Init hardware map and set motor directions + servo postions
@@ -83,19 +78,7 @@ public class Mar20RedAuto_TFOD extends LinearOpMode
         }
         Thread VufThread = new vuThread();
 
-        //Start OpenCV
-        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
-        pipeline = new RingDeterminationPipeline.SkystoneDeterminationPipeline();
-        webcam.setPipeline(pipeline);
-        webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
-                                         @Override
-                                         public void onOpened() {
 
-                                             webcam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
-                                         }
-                                     }
-        );
 
         //Set RR start Pose
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
@@ -324,13 +307,13 @@ public class Mar20RedAuto_TFOD extends LinearOpMode
         //Determine the number of rings in the starter stack
         int rings = 0;
 
-        if(pipeline.position == RingDeterminationPipeline.SkystoneDeterminationPipeline.RingPosition.FOUR){
+        if(ringPos.equals("Four")){
             rings = 4;
         }
-        else if(pipeline.position == RingDeterminationPipeline.SkystoneDeterminationPipeline.RingPosition.ONE){
+        else if(ringPos.equals("One")){
             rings = 1;
         }
-        else if(pipeline.position == RingDeterminationPipeline.SkystoneDeterminationPipeline.RingPosition.NONE){
+        else if(ringPos.equals("None")){
             rings = 0;
         }
 
