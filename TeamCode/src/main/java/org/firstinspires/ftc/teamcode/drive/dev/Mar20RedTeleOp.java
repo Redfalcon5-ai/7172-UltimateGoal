@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.drive.dev;
 
+import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.arcrobotics.ftclib.geometry.Transform2d;
@@ -193,6 +194,9 @@ public class Mar20RedTeleOp extends LinearOpMode
             double rightStickX = gpad.right_stick_x;    //Strafing
             mecDrive(leftStickY, rightStickY, leftStickX, rightStickX);
 
+            drive.setPoseEstimate(new com.acmerobotics.roadrunner.geometry.Pose2d(-X, -Y, Math.toRadians(Heading)));
+            com.acmerobotics.roadrunner.geometry.Pose2d myPos = drive.getPoseEstimate();
+
             //Latch Controls
             if (conveyorPow >= -1 && conveyorPow <= 1) {
                 conveyorPow = 0;
@@ -217,7 +221,6 @@ public class Mar20RedTeleOp extends LinearOpMode
 
 
             //Button Controls
-
             if (gpad.a) {
                 robot.grabber.setPosition(0.025);
             }
@@ -229,6 +232,13 @@ public class Mar20RedTeleOp extends LinearOpMode
             }
             if (gpad.bShift) {
                 grabberPow = -750;
+            }
+            if (gpad.y){
+                Trajectory shoot = drive.trajectoryBuilder(myPos)
+                        .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(0, -30, Math.toRadians(0)))
+                        .build();
+
+                drive.followTrajectory(shoot);
             }
 
             //Bumper and Touch Switch Controls
@@ -280,9 +290,6 @@ public class Mar20RedTeleOp extends LinearOpMode
             robot.wobble.setVelocity(grabberPow);
             robot.tilt.setPosition(linearPos);
             robot.indexer.setPosition(indexerPos);
-
-            drive.setPoseEstimate(new com.acmerobotics.roadrunner.geometry.Pose2d(X, Y, Math.toRadians(Heading)));
-            com.acmerobotics.roadrunner.geometry.Pose2d myPos = drive.getPoseEstimate();
 
             //Display the coordinates of the robot (inches)
             telemetry.addData("X", X);
@@ -426,7 +433,7 @@ public class Mar20RedTeleOp extends LinearOpMode
                         Orientation rotation = Orientation.getOrientation(lastLocation, EXTRINSIC, XYZ, DEGREES);
                         Heading = rotation.thirdAngle - 90;
 
-                        slamra.setPose(new Pose2d(Y * 0.0254,X * 0.0254, Rotation2d.fromDegrees(Heading)));
+                        slamra.setPose(new Pose2d(Y * 0.0254, X * 0.0254, Rotation2d.fromDegrees(Heading)));
                     }
                 }
             }

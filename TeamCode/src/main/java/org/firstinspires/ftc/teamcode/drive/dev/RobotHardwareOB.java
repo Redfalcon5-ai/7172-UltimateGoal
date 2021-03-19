@@ -1,0 +1,296 @@
+package org.firstinspires.ftc.teamcode.drive.dev;
+
+import com.arcrobotics.ftclib.geometry.Pose2d;
+import com.arcrobotics.ftclib.geometry.Rotation2d;
+import com.arcrobotics.ftclib.geometry.Transform2d;
+import com.arcrobotics.ftclib.geometry.Translation2d;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.hardware.bosch.BNO055IMU;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.drive.Templates.T265DriveSample;
+
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.spartronics4915.lib.T265Camera;
+
+public class RobotHardwareOB
+{
+
+    public final double INTAKE_POWER_IN = 1.0;
+    public final double INTAKE_POWER_OFF = 0;
+    public final double INTAKE_POWER_OUT = -1.0;
+    public final double CONVEYOR_POWER_IN = 0.90;
+    public final double CONVEYOR_POWER_FIRE = 0.75;
+    public final double CONVEYOR_POWER_LOAD = 0.75;
+    public final double CONVEYOR_POWER_LOADED = 0.75;
+    public final double CONVEYOR_POWER_OUT = -0.75;
+    public final double CONVEYOR_POWER_OFF = 0;
+    public final double INDEXER_POSITION_LOAD = 0.175;
+    public final double INDEXER_POSITION_FIRE = 0.50;
+    public final double SHOOTER_VELOCITY_FIRE = 1660;
+    public final double SHOOTER_VELOCITY_OFF = 0;
+    public final double GRABBER_POSITION_CLOSED = 0.025;
+    public final double GRABBER_POSITION_OPEN = 0.5;
+    public final double WOBBLE_VELOCITY_STOW = -700;
+    public final double WOBBLE_VELOCITY_FLIP = 700;
+    public final double TILT_POSITION_INIT = 0.66;
+
+    public enum ShootMode { IDLE, LOAD, TRIGGER, FIRE, RECOVER }
+    public ShootMode smode = ShootMode.IDLE;
+    public ElapsedTime smodeTimer = new ElapsedTime();
+
+    public enum WGMode { IDLE, GRABSTOW, FLIPOPEN }
+    public WGMode wgmode = WGMode.IDLE;
+    public ElapsedTime wgmodeTimer = new ElapsedTime();
+
+    //Create variables for hardware
+    public DcMotor lf   = null;
+    public DcMotor rf   = null;
+    public DcMotor lb   = null;
+    public DcMotor rb   = null;
+    public DcMotor intake = null;
+    public DcMotor conveyor = null;
+    public Servo tilt = null;
+    public Servo indexer = null;
+    public DcMotorEx shooter1 = null;
+    public DigitalChannel touch = null;
+    public DigitalChannel magnet = null;
+    public NormalizedColorSensor colorv3 = null;
+    public DcMotorEx wobble = null;
+    public Servo grabber = null;
+
+    public BNO055IMU imu = null;
+
+    //Create Hardware Map Object
+    HardwareMap hwMap = null;
+
+    public double intakePower = 0.0;
+    public double conveyorPower = 0.0;
+
+    //Initialize Hardware That
+    //Comes from the Config
+    public void init(HardwareMap ahwMap) {
+        // Save reference to Hardware map
+        hwMap = ahwMap;
+
+        // Define and Initialize Motors
+        lf = hwMap.get(DcMotor.class, "lf");
+        rf = hwMap.get(DcMotor.class, "rf");
+        lb = hwMap.get(DcMotor.class, "lb");
+        rb = hwMap.get(DcMotor.class, "rb");
+        intake = hwMap.get(DcMotor.class, "intake");
+        conveyor = hwMap.get(DcMotor.class, "conveyor");
+        tilt = hwMap.get(Servo.class, "tilt");
+        indexer = hwMap.get(Servo.class, "indexer");
+        shooter1 = (DcMotorEx)hwMap.get(DcMotor.class, "shooter1");
+        touch = hwMap.get(DigitalChannel.class, "touch");
+        magnet = hwMap.get(DigitalChannel.class, "magnet");
+        colorv3 = hwMap.get(NormalizedColorSensor.class, "colorv3");
+        wobble = (DcMotorEx)hwMap.get(DcMotor.class, "wobble");
+        grabber = hwMap.get(Servo.class, "grabber");
+
+        // Set all motors to zero power
+        //Set servos to starting position
+        lf.setPower(0);
+        rf.setPower(0);
+        lb.setPower(0);
+        rb.setPower(0);
+        intake.setPower(0);
+        conveyor.setPower(0);
+        tilt.setPosition(TILT_POSITION_INIT);
+        indexer.setPosition(INDEXER_POSITION_LOAD);
+        shooter1.setPower(0);
+        wobble.setPower(0);
+        grabber.setPosition(0.5);
+
+        // Set all motors to run without encoders
+        //Set mode for sensors
+        lf.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rf.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        lb.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rb.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        lf.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rf.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        lb.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rb.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        intake.setDirection(DcMotor.Direction.REVERSE);
+
+        shooter1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        wobble.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        touch.setMode(DigitalChannel.Mode.INPUT);
+        magnet.setMode(DigitalChannel.Mode.INPUT);
+
+        BNO055IMU.Parameters params = new BNO055IMU.Parameters();
+        params.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+        params.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        imu = hwMap.get(BNO055IMU.class, "imu");
+        imu.initialize(params);
+    }
+
+    public void intake() {
+        intakePower = INTAKE_POWER_IN;
+        conveyorPower = CONVEYOR_POWER_IN;
+        if (smode == ShootMode.IDLE)
+            setShootMode(ShootMode.LOAD);
+    }
+
+    public void outtake() {
+        intakePower = INTAKE_POWER_OUT;
+        conveyorPower = CONVEYOR_POWER_OUT;
+    }
+
+    public void shooter(double velocity) {
+        shooter1.setVelocity(velocity);
+    }
+
+    public void fire() {
+        if (smode == ShootMode.LOAD)
+            setShootMode(ShootMode.TRIGGER);
+    }
+
+    public void quiet() {
+        intakePower = INTAKE_POWER_OFF;
+        conveyorPower = CONVEYOR_POWER_OFF;
+        shooter(SHOOTER_VELOCITY_OFF);
+        indexer.setPosition(INDEXER_POSITION_LOAD);
+        setShootMode(ShootMode.IDLE);
+    }
+
+    public void setShootMode(ShootMode s) {
+        smode = s;
+        smodeTimer.reset();
+    }
+
+    public void updateAll() {
+        if (smode == ShootMode.LOAD) {
+            if (isRingLoaded()) shooter(SHOOTER_VELOCITY_FIRE);
+            if (conveyorPower == 0) {  // intake can override this
+                conveyorPower = isRingLoaded()
+                        ? CONVEYOR_POWER_LOADED
+                        : CONVEYOR_POWER_LOAD;
+            }
+        }
+        if (smode == ShootMode.TRIGGER) {
+            conveyorPower = CONVEYOR_POWER_FIRE;
+            if(smodeTimer.seconds() > 2){
+                smode = ShootMode.LOAD;
+            }
+            else if (isShooterReady()) {
+                indexer.setPosition(INDEXER_POSITION_FIRE);
+                setShootMode(ShootMode.FIRE);
+            }
+        }
+        if (smode == ShootMode.FIRE) {
+            conveyorPower = CONVEYOR_POWER_FIRE;
+            if (!isRingLoaded() || smodeTimer.seconds() > 0.60) {
+                indexer.setPosition(INDEXER_POSITION_LOAD);
+                setShootMode(ShootMode.RECOVER);
+            }
+        }
+        if (smode == ShootMode.RECOVER) {
+            if (smodeTimer.seconds() > 0.1)
+                setShootMode(ShootMode.LOAD);
+        }
+
+        updateWG();
+
+        intake.setPower(motorPower(intakePower));
+        conveyor.setPower(motorPower(conveyorPower));
+
+        intakePower = delatch(intakePower);
+        conveyorPower = delatch(conveyorPower);
+    }
+
+    public double motorPower(double x) {
+        // convert power values in 1.0..2.0 (latched) to be in 0..1.0.
+        if (x > 1.0) return x-1;
+        if (x < -1.0) return x+1;
+        return x;
+    }
+
+    public double delatch(double x) {
+        // keep x if it's latched, set to zero otherwise
+        if (x < -1.0 || x > 1.0) return x;
+        return 0;
+    }
+
+    public boolean isRingLoaded() {
+        return ((DistanceSensor)colorv3).getDistance(DistanceUnit.CM) < 4;
+    }
+
+    public boolean isShooterReady() {
+        double vel = shooter1.getVelocity();
+        return isRingLoaded()
+                && vel >= SHOOTER_VELOCITY_FIRE - 40
+                && vel <= SHOOTER_VELOCITY_FIRE + 40;
+    }
+
+    public double getIMUHeading() {
+        Orientation angles = imu.getAngularOrientation(
+                AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        return angles.firstAngle;
+    }
+
+    public void driveYXW(double ry, double rx, double rw) {
+        // ry == forward, rx == strafe, rw == turn
+        lf.setPower(ry + rw + rx);
+        rf.setPower(ry - rw - rx);
+        lb.setPower(ry + rw - rx);
+        rb.setPower(ry - rw + rx);
+    }
+
+    public void driveYXH(double ry, double rx, double th) {
+        double h = getIMUHeading() - th;
+        driveYXW(ry, rx, h * 0.02);
+    }
+
+    public void driveYXH(double ry, double rx, double th, double ch) {
+        double h = ch - th;
+        driveYXW(ry, rx, h * 0.02);
+    }
+
+    public void wgGrabStow() {
+        setWGMode(WGMode.GRABSTOW);
+    }
+
+    public void wgFlipOpen() {
+        setWGMode(WGMode.FLIPOPEN);
+    }
+
+    public void setWGMode(WGMode wgm) {
+        wgmode = wgm;
+        wgmodeTimer.reset();
+    }
+
+    public void updateWG() {
+        double wobbleVelocity = 0;
+        if (wgmode == WGMode.GRABSTOW) {
+            grabber.setPosition(GRABBER_POSITION_CLOSED);
+            double sec = wgmodeTimer.seconds();
+            if (sec > 0.5 && sec < 2)
+                wobbleVelocity = WOBBLE_VELOCITY_STOW;
+        }
+        if (wgmode == WGMode.FLIPOPEN) {
+            double sec = wgmodeTimer.seconds();
+            if (sec < 1.5) wobbleVelocity = WOBBLE_VELOCITY_FLIP;
+            else if (sec < 1.8) grabber.setPosition(GRABBER_POSITION_OPEN);
+            else if (sec < 2.5) wobbleVelocity = WOBBLE_VELOCITY_STOW;
+            else if (sec < 6.1) wobbleVelocity = 0;
+        }
+        wobble.setVelocity(wobbleVelocity);
+    }
+
+
+}
+
