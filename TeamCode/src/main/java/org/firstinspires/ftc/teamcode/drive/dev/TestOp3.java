@@ -6,20 +6,16 @@ import com.arcrobotics.ftclib.geometry.Transform2d;
 import com.arcrobotics.ftclib.geometry.Translation2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.util.ElapsedTime;
 import com.spartronics4915.lib.T265Camera;
 
-import org.firstinspires.ftc.teamcode.drive.Templates.T265DriveSample;
 import org.firstinspires.ftc.teamcode.util.DualPad;
 
 
 @TeleOp
 
 public class TestOp3 extends LinearOpMode {
-    RobotHardwareOB robot = new RobotHardwareOB();
+    RobotHardwareAS robot = new RobotHardwareAS();
     DualPad gpad = new DualPad();
 
     //Create T265 Camera Object
@@ -51,6 +47,11 @@ public class TestOp3 extends LinearOpMode {
         //Init SLAM and the camera with the correct starting coordinates
         initCameraPos();
 
+        boolean aLast = false;
+        boolean bLast = false;
+        boolean wgflip = false;
+        boolean wgopen = false;
+
         waitForStart();
 
         slamra.start();
@@ -79,8 +80,22 @@ public class TestOp3 extends LinearOpMode {
             if (gpad.left_trigger > 0.25) robot.outtake();
             if (gpad.x) robot.quiet();
             if (gpad.right_bumper) robot.fire();
-            if (gpad.a) robot.wgGrabStow();
-            if (gpad.b) robot.wgFlipOpen();
+
+            boolean aThis = gpad.a;
+            if (aThis && !aLast) {
+                wgflip = !wgflip;
+                if (wgflip) robot.wgFlip();
+                else robot.wgStow();
+            }
+            aLast = aThis;
+
+            boolean bThis = gpad.b;
+            if (bThis && !bLast) {
+                wgopen = !wgopen;
+                if (wgopen) robot.wgOpen();
+                else robot.wgClose();
+            }
+            bLast = bThis;
 
             robot.updateAll();
             telemetry.addData("isRingLoaded", robot.isRingLoaded());

@@ -33,7 +33,7 @@ import java.util.Arrays;
 public class Mar20RedAuto extends LinearOpMode
 {
     //Create elapsed time and robot hardware objects
-    RobotHardware robot   = new RobotHardware();
+    RobotHardwareAS robot   = new RobotHardwareAS();
 
     //OpenCV stuff
     RingDeterminationPipeline rings   = new RingDeterminationPipeline();
@@ -44,12 +44,9 @@ public class Mar20RedAuto extends LinearOpMode
     public void runOpMode() {
         //Init hardware map and set motor directions + servo postions
         robot.init(hardwareMap);
-        robot.shooter1.setDirection(DcMotorSimple.Direction.REVERSE);
-        robot.intake.setDirection(DcMotorSimple.Direction.FORWARD);
-        robot.conveyor.setDirection(DcMotorSimple.Direction.REVERSE);
-        robot.indexer.setDirection(Servo.Direction.REVERSE);
-        robot.grabber.setPosition(0);
-        robot.tilt.setPosition(0.63);
+        robot.wgClose();
+        robot.updateAll();
+        robot.tilt.setPosition(0.66);
 
 
         //Start OpenCV
@@ -236,7 +233,7 @@ public class Mar20RedAuto extends LinearOpMode
 
         //Four ring trajectories
         Trajectory four1 = drive.trajectoryBuilder(move2.end())
-                .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(56, -46, Math.toRadians(-90)))
+                .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(60, -46, Math.toRadians(-90)))
                 .build();
 
         Trajectory four2 = drive.trajectoryBuilder(four1.end())
@@ -278,10 +275,8 @@ public class Mar20RedAuto extends LinearOpMode
                 .build();
 
         Trajectory four7 = drive.trajectoryBuilder(four6.end())
-                .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(39, -47, Math.toRadians(0)))
+                .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(16, -47, Math.toRadians(0)))
                 .build();
-
-        robot.indexer.setPosition(0.85);
 
         int rings = 0;
         boolean ringsSet = false;
@@ -320,45 +315,45 @@ public class Mar20RedAuto extends LinearOpMode
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
 
-        //Determine the number of rings in the starter stack
-
-
-
-
-        robot.shooter1.setVelocity(-1700);
-        robot.conveyor.setPower(-1);
-        robot.indexer.setPosition(0.85);
-
+        robot.shooter(1700);
+        robot.intake();
+        robot.updateAll();
 
         drive.followTrajectory(move1);
         drive.followTrajectory(move2);
 
         sleep(500);
 
-        //Shot 1
-        robot.indexer.setPosition(0.5);
-        sleep(250);
-        robot.indexer.setPosition(0.85);
-        robot.conveyor.setPower(-1);
+        robot.updateAll();
+        robot.fire();
+        while(robot.smode != RobotHardwareOB.ShootMode.LOAD){
+            robot.updateAll();
+        }
 
-        sleep(1500);
+        sleep(500);
 
         //Shot 2
-        robot.indexer.setPosition(0.5);
-        sleep(250);
-        robot.indexer.setPosition(0.85);
+        robot.fire();
+        while(robot.smode != RobotHardwareOB.ShootMode.LOAD){
+            robot.updateAll();
+        }
 
-        sleep(1500);
+        robot.intake();
+        robot.updateAll();
+        sleep(500);
 
         //Shot 3
-        robot.indexer.setPosition(0.5);
+        robot.fire();
+        while(robot.smode != RobotHardwareOB.ShootMode.LOAD){
+            robot.updateAll();
+        }
+
         sleep(500);
-        robot.indexer.setPosition(0.85);
-        sleep(1000);
 
-        robot.shooter1.setVelocity(0);
-        robot.conveyor.setPower(-1);
-
+        robot.quiet();
+        robot.updateAll();
+        robot.intake();
+        robot.updateAll();
 
         if (rings == 0){
             drive.followTrajectory(zero1);
@@ -389,8 +384,6 @@ public class Mar20RedAuto extends LinearOpMode
             robot.wobble.setVelocity(750);
             sleep(1000);
             robot.wobble.setVelocity(0);
-            robot.intake.setPower(-1);
-            robot.conveyor.setPower(-1);
             drive.followTrajectory(one2);
             drive.followTrajectory(one3);
             drive.followTrajectory(one4);
@@ -399,7 +392,7 @@ public class Mar20RedAuto extends LinearOpMode
             robot.grabber.setPosition(0.025);
             sleep(1000);
             robot.intake.setPower(0);
-            robot.shooter1.setVelocity(-1600);
+            robot.shooter(1600);
             drive.followTrajectory(one6);
 
             robot.indexer.setPosition(0.5);
@@ -408,7 +401,7 @@ public class Mar20RedAuto extends LinearOpMode
 
 
             drive.followTrajectory(one7);
-            robot.shooter1.setVelocity(0);
+            robot.shooter(0);
             robot.conveyor.setPower(-1);
             robot.grabber.setPosition(0.5);
             sleep(1000);
@@ -420,55 +413,58 @@ public class Mar20RedAuto extends LinearOpMode
 
         if (rings == 4){
             drive.followTrajectory(four1);
-            robot.grabber.setPosition(0.5);
-            sleep(1000);
-            robot.wobble.setVelocity(750);
-            sleep(1000);
-            robot.wobble.setVelocity(0);
+            robot.wgOpen();
+            robot.updateAll();
+            robot.wgFlip();
+            robot.updateAll();
             drive.followTrajectory(four2);
             sleep(500);
-            robot.grabber.setPosition(0.025);
+            robot.wgClose();
+            robot.intake();
+            robot.updateAll();
             sleep(500);
             drive.followTrajectory(four3);
-            robot.intake.setPower(-0.75);
-            robot.conveyor.setPower(-1);
-
             drive.followTrajectory(four4);
-            robot.shooter1.setVelocity(-1700);
+            robot.shooter(1660);
+            robot.updateAll();
 
-            sleep(1000);
-
-            robot.indexer.setPosition(0.5);
             sleep(500);
-            robot.indexer.setPosition(0.85);
+
+            robot.fire();
+            while(robot.smode != RobotHardwareOB.ShootMode.LOAD){
+                robot.updateAll();
+            }
+            robot.intake();
+            robot.updateAll();
 
             drive.followTrajectory(four5);
 
             sleep(500);
 
-            robot.indexer.setPosition(0.5);
-            sleep(500);
-            robot.indexer.setPosition(0.85);
+            robot.fire();
+            while(robot.smode != RobotHardwareOB.ShootMode.LOAD){
+                robot.updateAll();
+            }
 
+            robot.fire();
+            while(robot.smode != RobotHardwareOB.ShootMode.LOAD){
+                robot.updateAll();
+            }
+
+            robot.fire();
+            while(robot.smode != RobotHardwareOB.ShootMode.LOAD){
+                robot.updateAll();
+            }
 
             sleep(500);
-
-            robot.indexer.setPosition(0.5);
-            sleep(500);
-            robot.indexer.setPosition(0.85);
-
-            sleep(500);
-
-            robot.indexer.setPosition(0.5);
-            sleep(500);
-            robot.indexer.setPosition(0.85);
 
             drive.followTrajectory(four6);
-            robot.grabber.setPosition(0.5);
+            robot.wgOpen();
+            robot.updateAll();
+            robot.wgStow();
+            robot.updateAll();
+
             drive.followTrajectory(four7);
-            robot.wobble.setVelocity(-750);
-            sleep(500);
-            robot.wobble.setVelocity(0);
         }
 
 

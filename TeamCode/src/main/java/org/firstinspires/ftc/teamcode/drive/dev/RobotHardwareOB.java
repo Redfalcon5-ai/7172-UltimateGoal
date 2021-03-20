@@ -1,9 +1,5 @@
 package org.firstinspires.ftc.teamcode.drive.dev;
 
-import com.arcrobotics.ftclib.geometry.Pose2d;
-import com.arcrobotics.ftclib.geometry.Rotation2d;
-import com.arcrobotics.ftclib.geometry.Transform2d;
-import com.arcrobotics.ftclib.geometry.Translation2d;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
@@ -13,14 +9,11 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.drive.Templates.T265DriveSample;
-
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.spartronics4915.lib.T265Camera;
 
 public class RobotHardwareOB
 {
@@ -36,9 +29,10 @@ public class RobotHardwareOB
     public final double CONVEYOR_POWER_OFF = 0;
     public final double INDEXER_POSITION_LOAD = 0.175;
     public final double INDEXER_POSITION_FIRE = 0.50;
-    public final double SHOOTER_VELOCITY_FIRE = 1660;
+    public final double SHOOTER_VELOCITY_NORMAL = 1660;
+    public final double SHOOTER_VELOCITY_LOW = 1400;
     public final double SHOOTER_VELOCITY_OFF = 0;
-    public final double GRABBER_POSITION_CLOSED = 0.025;
+    public final double GRABBER_POSITION_CLOSE = 0.025;
     public final double GRABBER_POSITION_OPEN = 0.5;
     public final double WOBBLE_VELOCITY_STOW = -700;
     public final double WOBBLE_VELOCITY_FLIP = 700;
@@ -48,7 +42,7 @@ public class RobotHardwareOB
     public ShootMode smode = ShootMode.IDLE;
     public ElapsedTime smodeTimer = new ElapsedTime();
 
-    public enum WGMode { IDLE, GRABSTOW, FLIPOPEN }
+    public static enum WGMode { IDLE, STOW, FLIP }
     public WGMode wgmode = WGMode.IDLE;
     public ElapsedTime wgmodeTimer = new ElapsedTime();
 
@@ -75,6 +69,7 @@ public class RobotHardwareOB
 
     public double intakePower = 0.0;
     public double conveyorPower = 0.0;
+    public double fireVelocity = SHOOTER_VELOCITY_NORMAL;
 
     //Initialize Hardware That
     //Comes from the Config
@@ -150,8 +145,12 @@ public class RobotHardwareOB
         conveyorPower = CONVEYOR_POWER_OUT;
     }
 
-    public void shooter(double velocity) {
-        shooter1.setVelocity(velocity);
+    public void shooter(double v) {
+        shooter1.setVelocity(v);
+    }
+
+    public void setFireVelocity(double v) {
+        fireVelocity = v;
     }
 
     public void fire() {
@@ -174,7 +173,7 @@ public class RobotHardwareOB
 
     public void updateAll() {
         if (smode == ShootMode.LOAD) {
-            if (isRingLoaded()) shooter(SHOOTER_VELOCITY_FIRE);
+            if (isRingLoaded()) shooter(fireVelocity);
             if (conveyorPower == 0) {  // intake can override this
                 conveyorPower = isRingLoaded()
                         ? CONVEYOR_POWER_LOADED
@@ -232,8 +231,8 @@ public class RobotHardwareOB
     public boolean isShooterReady() {
         double vel = shooter1.getVelocity();
         return isRingLoaded()
-                && vel >= SHOOTER_VELOCITY_FIRE - 40
-                && vel <= SHOOTER_VELOCITY_FIRE + 40;
+                && vel >= fireVelocity - 40
+                && vel <= fireVelocity + 40;
     }
 
     public double getIMUHeading() {
@@ -255,17 +254,16 @@ public class RobotHardwareOB
         driveYXW(ry, rx, h * 0.02);
     }
 
-    public void driveYXH(double ry, double rx, double th, double ch) {
-        double h = ch - th;
-        driveYXW(ry, rx, h * 0.02);
+    public void wgStow() { setWGMode(WGMode.STOW); }
+
+    public void wgFlip() { setWGMode(WGMode.FLIP); }
+
+    public void wgOpen() {
+        grabber.setPosition(GRABBER_POSITION_OPEN);
     }
 
-    public void wgGrabStow() {
-        setWGMode(WGMode.GRABSTOW);
-    }
-
-    public void wgFlipOpen() {
-        setWGMode(WGMode.FLIPOPEN);
+    public void wgClose() {
+        grabber.setPosition(GRABBER_POSITION_CLOSE);
     }
 
     public void setWGMode(WGMode wgm) {
@@ -275,22 +273,16 @@ public class RobotHardwareOB
 
     public void updateWG() {
         double wobbleVelocity = 0;
-        if (wgmode == WGMode.GRABSTOW) {
-            grabber.setPosition(GRABBER_POSITION_CLOSED);
-            double sec = wgmodeTimer.seconds();
-            if (sec > 0.5 && sec < 2)
+        if (wgmode == WGMode.STOW) {
+            if (wgmodeTimer.seconds() < 1.5)
                 wobbleVelocity = WOBBLE_VELOCITY_STOW;
         }
-        if (wgmode == WGMode.FLIPOPEN) {
-            double sec = wgmodeTimer.seconds();
-            if (sec < 1.5) wobbleVelocity = WOBBLE_VELOCITY_FLIP;
-            else if (sec < 1.8) grabber.setPosition(GRABBER_POSITION_OPEN);
-            else if (sec < 2.5) wobbleVelocity = WOBBLE_VELOCITY_STOW;
-            else if (sec < 6.1) wobbleVelocity = 0;
+        if (wgmode == WGMode.FLIP) {
+            if (wgmodeTimer.seconds() < 1.5)
+                wobbleVelocity = WOBBLE_VELOCITY_FLIP;
         }
         wobble.setVelocity(wobbleVelocity);
     }
-
 
 }
 
