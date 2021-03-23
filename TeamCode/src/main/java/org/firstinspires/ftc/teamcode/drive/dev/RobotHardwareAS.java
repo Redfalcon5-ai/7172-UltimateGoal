@@ -38,6 +38,53 @@ public class RobotHardwareAS extends RobotHardwareOB
         driveYXW(ry, rx, h * 0.02);
     }
 
+    public void updateAll(int velocity) {
+        if (smode == ShootMode.LOAD) {
+            if (isRingLoaded()) shooter(velocity);
+            if (conveyorPower == 0) {  // intake can override this
+                conveyorPower = isRingLoaded()
+                        ? CONVEYOR_POWER_LOADED
+                        : CONVEYOR_POWER_LOAD;
+            }
+        }
+        if (smode == ShootMode.TRIGGER) {
+            conveyorPower = CONVEYOR_POWER_FIRE;
+            if(smodeTimer.seconds() > 2){
+                smode = ShootMode.LOAD;
+            }
+            else if (isShooterReady(velocity)) {
+                indexer.setPosition(INDEXER_POSITION_FIRE);
+                setShootMode(ShootMode.FIRE);
+            }
+        }
+        if (smode == ShootMode.FIRE) {
+            conveyorPower = CONVEYOR_POWER_FIRE;
+            if (!isRingLoaded() || smodeTimer.seconds() > 0.60) {
+                indexer.setPosition(INDEXER_POSITION_LOAD);
+                setShootMode(ShootMode.RECOVER);
+            }
+        }
+        if (smode == ShootMode.RECOVER) {
+            if (smodeTimer.seconds() > 0.1)
+                setShootMode(ShootMode.LOAD);
+        }
+
+        updateWG();
+
+        intake.setPower(motorPower(intakePower));
+        conveyor.setPower(motorPower(conveyorPower));
+
+        intakePower = delatch(intakePower);
+        conveyorPower = delatch(conveyorPower);
+    }
+
+    public boolean isShooterReady(int velocity) {
+        double vel = shooter1.getVelocity();
+        return isRingLoaded()
+                && vel >= velocity - 20
+                && vel <= velocity + 20;
+    }
+
 
 }
 

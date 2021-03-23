@@ -27,9 +27,9 @@ public class RobotHardwareOB
     public final double CONVEYOR_POWER_LOADED = 0.75;
     public final double CONVEYOR_POWER_OUT = -0.75;
     public final double CONVEYOR_POWER_OFF = 0;
-    public final double INDEXER_POSITION_LOAD = 0.175;
-    public final double INDEXER_POSITION_FIRE = 0.50;
-    public final double SHOOTER_VELOCITY_NORMAL = 1660;
+    public final double INDEXER_POSITION_LOAD = 0.5;
+    public final double INDEXER_POSITION_FIRE = 0.6;
+    public final double SHOOTER_VELOCITY_NORMAL = 1700;
     public final double SHOOTER_VELOCITY_LOW = 1400;
     public final double SHOOTER_VELOCITY_OFF = 0;
     public final double GRABBER_POSITION_CLOSE = 0.025;
@@ -122,6 +122,7 @@ public class RobotHardwareOB
         intake.setDirection(DcMotor.Direction.REVERSE);
 
         shooter1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        shooter1.setVelocityPIDFCoefficients(150, 0, 0, 13);
         wobble.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         touch.setMode(DigitalChannel.Mode.INPUT);
         magnet.setMode(DigitalChannel.Mode.INPUT);
@@ -231,8 +232,8 @@ public class RobotHardwareOB
     public boolean isShooterReady() {
         double vel = shooter1.getVelocity();
         return isRingLoaded()
-                && vel >= fireVelocity - 40
-                && vel <= fireVelocity + 40;
+                && vel >= fireVelocity - 20
+                && vel <= fireVelocity + 20;
     }
 
     public double getIMUHeading() {

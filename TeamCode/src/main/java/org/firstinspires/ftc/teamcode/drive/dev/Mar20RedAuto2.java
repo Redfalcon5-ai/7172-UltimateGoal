@@ -6,21 +6,13 @@ import com.acmerobotics.roadrunner.trajectory.constraints.AngularVelocityConstra
 import com.acmerobotics.roadrunner.trajectory.constraints.MecanumVelocityConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.MinVelocityConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.ProfileAccelerationConstraint;
-import com.arcrobotics.ftclib.geometry.Pose2d;
-import com.arcrobotics.ftclib.geometry.Rotation2d;
-import com.arcrobotics.ftclib.geometry.Transform2d;
-import com.arcrobotics.ftclib.geometry.Translation2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.spartronics4915.lib.T265Camera;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.util.RingDeterminationPipeline;
-import org.firstinspires.ftc.teamcode.util.RobotHardware;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
@@ -29,8 +21,8 @@ import java.util.Arrays;
 
 //
 
-@Autonomous(group="Mar20RedAuto")
-public class Mar20RedAuto extends LinearOpMode
+@Autonomous(group="Mar20RedAuto2")
+public class Mar20RedAuto2 extends LinearOpMode
 {
     //Create elapsed time and robot hardware objects
     RobotHardwareAS robot   = new RobotHardwareAS();
@@ -237,11 +229,11 @@ public class Mar20RedAuto extends LinearOpMode
                 .build();
 
         Trajectory four2 = drive.trajectoryBuilder(four1.end())
-                .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(-35, -58, Math.toRadians(0)))
+                .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(-35, -62, Math.toRadians(0)))
                 .build();
 
         Trajectory four3 = drive.trajectoryBuilder(four2.end())
-                .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(-47, -35, Math.toRadians(0)))
+                .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(-47, -40, Math.toRadians(0)))
                 .build();
 
         Trajectory four4 = drive.trajectoryBuilder(four3.end())
@@ -271,7 +263,7 @@ public class Mar20RedAuto extends LinearOpMode
                 .build();
 
         Trajectory four6 = drive.trajectoryBuilder(four5.end())
-                .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(48, -47, Math.toRadians(160)))
+                .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(48, -50, Math.toRadians(160)))
                 .build();
 
         Trajectory four7 = drive.trajectoryBuilder(four6.end())

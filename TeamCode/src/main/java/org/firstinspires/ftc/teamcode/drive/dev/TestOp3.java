@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.drive.dev;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.arcrobotics.ftclib.geometry.Transform2d;
@@ -9,6 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.spartronics4915.lib.T265Camera;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.util.DualPad;
 
 
@@ -17,6 +19,10 @@ import org.firstinspires.ftc.teamcode.util.DualPad;
 public class TestOp3 extends LinearOpMode {
     RobotHardwareAS robot = new RobotHardwareAS();
     DualPad gpad = new DualPad();
+    FtcDashboard dashboard = FtcDashboard.getInstance();
+    Telemetry dashboardTelemetry = dashboard.getTelemetry();
+
+
 
     //Create T265 Camera Object
     private static T265Camera slamra = null;
@@ -69,7 +75,7 @@ public class TestOp3 extends LinearOpMode {
             double jw = gpad.left_stick_x;   // turning
             if (jx != 0) targetHeading = zeroHeading;
             if (jw != 0) targetHeading = 9999;
-            if (targetHeading == 9999)
+            if (wgflip || targetHeading == 9999)
                 robot.driveYXW(jy, jx, jw);
             else
                 //robot.driveYXH(jy, jx, targetHeading);
@@ -97,11 +103,27 @@ public class TestOp3 extends LinearOpMode {
             }
             bLast = bThis;
 
+            if (gpad.dpad_up) robot.setFireVelocity(robot.SHOOTER_VELOCITY_NORMAL);
+            if (gpad.dpad_down) robot.setFireVelocity(robot.SHOOTER_VELOCITY_LOW);
+
+
+
             robot.updateAll();
-            telemetry.addData("isRingLoaded", robot.isRingLoaded());
-            telemetry.addData("Heading", Heading);
-            telemetry.addData("velocity", robot.shooter1.getVelocity());
-            telemetry.update();
+
+            double x = 1200;
+            double y = 2000;
+
+            if(robot.isShooterReady()){
+                dashboardTelemetry.addData("Shooter Ready", 1400);
+            }
+            else{
+                dashboardTelemetry.addData("Shooter Ready", 1300);
+            }
+
+            dashboardTelemetry.addData("velocity", robot.shooter1.getVelocity());
+            dashboardTelemetry.addData("x", x);
+            dashboardTelemetry.addData("y", y);
+            dashboardTelemetry.update();
         }
 
         t265Thread.interrupt();
