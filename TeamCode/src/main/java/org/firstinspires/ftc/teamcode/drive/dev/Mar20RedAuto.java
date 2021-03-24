@@ -103,7 +103,7 @@ public class Mar20RedAuto extends LinearOpMode
 
         Trajectory zero2 = drive.trajectoryBuilder(zero1.end())
                 .lineToLinearHeading(
-                        new com.acmerobotics.roadrunner.geometry.Pose2d(-32, -58.5, Math.toRadians(0)),
+                        new com.acmerobotics.roadrunner.geometry.Pose2d(-28, -58.5, Math.toRadians(0)),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -237,7 +237,7 @@ public class Mar20RedAuto extends LinearOpMode
                 .build();
 
         Trajectory four2 = drive.trajectoryBuilder(four1.end())
-                .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(-35, -58, Math.toRadians(0)))
+                .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(-35, -60, Math.toRadians(0)))
                 .build();
 
         Trajectory four3 = drive.trajectoryBuilder(four2.end())
@@ -259,7 +259,7 @@ public class Mar20RedAuto extends LinearOpMode
 
         Trajectory four5 = drive.trajectoryBuilder(four4.end())
                 .lineToLinearHeading(
-                        new com.acmerobotics.roadrunner.geometry.Pose2d(-12, -40, Math.toRadians(5)),
+                        new com.acmerobotics.roadrunner.geometry.Pose2d(-12, -38, Math.toRadians(5)),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -274,8 +274,17 @@ public class Mar20RedAuto extends LinearOpMode
                 .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(48, -47, Math.toRadians(160)))
                 .build();
 
-        Trajectory four7 = drive.trajectoryBuilder(four6.end())
-                .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(16, -47, Math.toRadians(0)))
+        Trajectory four7 = drive.trajectoryBuilder(four4.end())
+                .lineToLinearHeading(
+                        new com.acmerobotics.roadrunner.geometry.Pose2d(16, -47, Math.toRadians(5)),
+                        new MinVelocityConstraint(
+                                Arrays.asList(
+                                        new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
+                                        new MecanumVelocityConstraint(30, DriveConstants.TRACK_WIDTH)
+                                )
+                        ),
+                        new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL)
+                )
                 .build();
 
         int rings = 0;
@@ -315,63 +324,68 @@ public class Mar20RedAuto extends LinearOpMode
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
 
-        robot.shooter(1600);
-        robot.intake();
-        robot.updateAll(1600);
+        robot.shooter(1700);
 
         drive.followTrajectory(move1);
+
+        robot.intake();
+        robot.updateAll(1700);
+        robot.updateAll(1700);
+
         drive.followTrajectory(move2);
 
         sleep(500);
 
-        robot.updateAll(1600);
+        robot.updateAll(1700);
         robot.fire();
         while(robot.smode != RobotHardwareOB.ShootMode.LOAD){
-            robot.updateAll(1600);
+            robot.updateAll(1700);
         }
-
-        sleep(500);
 
         //Shot 2
         robot.fire();
         while(robot.smode != RobotHardwareOB.ShootMode.LOAD){
-            robot.updateAll(1600);
+            robot.updateAll(1700);
         }
 
         robot.intake();
-        robot.updateAll(1600);
+        robot.updateAll(1700);
+        robot.updateAll(1700);
         sleep(500);
 
         //Shot 3
         robot.fire();
         while(robot.smode != RobotHardwareOB.ShootMode.LOAD){
-            robot.updateAll(1600);
+            robot.updateAll(1700);
         }
 
         sleep(500);
 
         robot.quiet();
-        robot.updateAll(1600);
+        robot.updateAll(1700);
         robot.intake();
-        robot.updateAll(1600);
+        robot.updateAll(1700);
 
         if (rings == 0){
             drive.followTrajectory(zero1);
-            robot.grabber.setPosition(0.5);
+            robot.wgOpen();
+            robot.updateAll();
             sleep(1000);
-            robot.wobble.setVelocity(750);
-            sleep(1000);
-            robot.wobble.setVelocity(0);
+            robot.wgFlip();
+            robot.updateAll();
             drive.followTrajectory(zero2);
-            robot.grabber.setPosition(0.025);
+            sleep(1000);
+            robot.wgClose();
+            robot.updateAll();
             sleep(1000);
             drive.followTrajectory(zero3);
-            robot.grabber.setPosition(0.5);
+            robot.wgOpen();
+            robot.updateAll();
             sleep(1000);
             drive.followTrajectory(zero4);
-            robot.wobble.setVelocity(-750);
+            robot.wgStow();
+            robot.updateAll();
             sleep(1000);
-            robot.wobble.setVelocity(0);
             drive.followTrajectory(zero5);
         }
 
@@ -414,28 +428,28 @@ public class Mar20RedAuto extends LinearOpMode
         if (rings == 4){
             drive.followTrajectory(four1);
             robot.wgOpen();
-            robot.updateAll(1600);
+            robot.updateAll(1660);
             robot.wgFlip();
-            robot.updateAll(1600);
+            robot.updateAll(1660);
             drive.followTrajectory(four2);
             sleep(500);
             robot.wgClose();
             robot.intake();
-            robot.updateAll(1600);
+            robot.updateAll(1660);
             sleep(500);
             drive.followTrajectory(four3);
             drive.followTrajectory(four4);
-            robot.shooter(1600);
-            robot.updateAll(1600);
+            robot.shooter(1660);
+            robot.updateAll(1660);
 
             sleep(500);
 
             robot.fire();
             while(robot.smode != RobotHardwareOB.ShootMode.LOAD){
-                robot.updateAll(1600);
+                robot.updateAll(1660);
             }
             robot.intake();
-            robot.updateAll(1600);
+            robot.updateAll(1660);
 
             drive.followTrajectory(four5);
 
@@ -443,26 +457,26 @@ public class Mar20RedAuto extends LinearOpMode
 
             robot.fire();
             while(robot.smode != RobotHardwareOB.ShootMode.LOAD){
-                robot.updateAll(1600);
+                robot.updateAll(1660);
             }
 
             robot.fire();
             while(robot.smode != RobotHardwareOB.ShootMode.LOAD){
-                robot.updateAll(1600);
+                robot.updateAll(1660);
             }
 
             robot.fire();
             while(robot.smode != RobotHardwareOB.ShootMode.LOAD){
-                robot.updateAll(1600);
+                robot.updateAll(1660);
             }
 
             sleep(500);
 
             drive.followTrajectory(four6);
             robot.wgOpen();
-            robot.updateAll(1600);
+            robot.updateAll(1660);
             robot.wgStow();
-            robot.updateAll(1600);
+            robot.updateAll(1660);
 
             drive.followTrajectory(four7);
         }

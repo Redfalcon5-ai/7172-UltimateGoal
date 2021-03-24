@@ -58,9 +58,19 @@ public class TestOp3 extends LinearOpMode {
         boolean wgflip = false;
         boolean wgopen = false;
 
-        waitForStart();
+        sleep(5000);
 
-        slamra.start();
+        try{
+            slamra.start();
+        } catch (Exception e){
+            try{
+                slamra.start();
+            } catch (Exception f){
+                slamra.start();
+            }
+        }
+
+        waitForStart();
 
         //Start thread and continue with the main thread
         t265Thread.start();
@@ -73,7 +83,7 @@ public class TestOp3 extends LinearOpMode {
             double jy = -gpad.left_stick_y - gpad.right_stick_y; // forward
             double jx = gpad.right_stick_x;  // strafing
             double jw = gpad.left_stick_x;   // turning
-            if (jx != 0) targetHeading = zeroHeading;
+            if (jx >= 0.5 || jx <= -0.5) targetHeading = zeroHeading;
             if (jw != 0) targetHeading = 9999;
             if (wgflip || targetHeading == 9999)
                 robot.driveYXW(jy, jx, jw);
