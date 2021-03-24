@@ -406,7 +406,7 @@ public class Mar20RedAuto extends LinearOpMode
             robot.grabber.setPosition(0.025);
             sleep(1000);
             robot.intake.setPower(0);
-            robot.shooter(1600);
+            robot.shooter(1660);
             drive.followTrajectory(one6);
 
             robot.indexer.setPosition(0.5);
