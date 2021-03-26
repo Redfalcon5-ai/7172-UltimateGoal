@@ -85,6 +85,17 @@ public class RobotHardwareAS extends RobotHardwareOB
                 && vel <= velocity + 20;
     }
 
+    public double getLRangeV() {
+        return lrange.getVoltage();
+    }
+
+    public void driveYDH(double ry, double dv, double th, double heading) {
+        double herror = heading - th;
+        double derror = dv - getLRangeV();
+        if (herror < -10 || herror > 10) derror = 0;
+        driveYXW(ry, derror * 25, herror * 0.02);
+    }
+
 
 }
 

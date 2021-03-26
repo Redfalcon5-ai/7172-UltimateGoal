@@ -39,6 +39,8 @@ public class TestOp3 extends LinearOpMode {
     double X = 0;
     double Heading = 0;
 
+    boolean slam = false;
+
     @Override
     public void runOpMode() {
         robot.init(hardwareMap);
@@ -46,9 +48,6 @@ public class TestOp3 extends LinearOpMode {
         robot.rb.setDirection(DcMotorSimple.Direction.FORWARD);
         robot.lf.setDirection(DcMotorSimple.Direction.REVERSE);
         robot.lb.setDirection(DcMotorSimple.Direction.REVERSE);
-
-        //Create T265 Thread
-        Thread t265Thread = new T265Thread();
 
         //Init SLAM and the camera with the correct starting coordinates
         initCameraPos();
@@ -58,34 +57,49 @@ public class TestOp3 extends LinearOpMode {
         boolean wgflip = false;
         boolean wgopen = false;
 
-        sleep(5000);
 
-        try{
-            slamra.start();
-        } catch (Exception e){
-            try{
-                slamra.start();
-            } catch (Exception f){
-                slamra.start();
-            }
-        }
 
         waitForStart();
 
         //Start thread and continue with the main thread
-        t265Thread.start();
+
 
         double targetHeading = 9999;
         double zeroHeading = 0;
         while (opModeIsActive()) {
             gpad.mergePads(gamepad1, gamepad2);
 
+            if(!slam){
+                try{
+                    slamra.start();
+                    slam = true;
+                } catch (Exception e){
+                    slam = false;
+                }
+            }
+
             double jy = -gpad.left_stick_y - gpad.right_stick_y; // forward
             double jx = gpad.right_stick_x;  // strafing
             double jw = gpad.left_stick_x;   // turning
             if (jx >= 0.5 || jx <= -0.5) targetHeading = zeroHeading;
             if (jw != 0) targetHeading = 9999;
-            if (wgflip || targetHeading == 9999)
+            if (gpad.dpad_right) {
+                robot.driveYDH(jy, 0.14, zeroHeading, Heading);
+                robot.setFireVelocity(robot.SHOOTER_VELOCITY_NORMAL);
+            }
+            else if (gpad.dpad_up) {
+                robot.driveYDH(jy, 0.101, zeroHeading, Heading);
+                robot.setFireVelocity(robot.SHOOTER_VELOCITY_LOW);
+            }
+            else if (gpad.dpad_left) {
+                robot.driveYDH(jy, 0.0685, zeroHeading, Heading);
+                robot.setFireVelocity(robot.SHOOTER_VELOCITY_LOW);
+            }
+            else if (gpad.dpad_down) {
+                robot.driveYDH(jy, 0.058, zeroHeading, Heading);
+                robot.setFireVelocity(robot.SHOOTER_VELOCITY_LOW);
+            }
+            else if (wgflip || targetHeading == 9999)
                 robot.driveYXW(jy, jx, jw);
             else
                 //robot.driveYXH(jy, jx, targetHeading);
@@ -93,9 +107,10 @@ public class TestOp3 extends LinearOpMode {
             if (gpad.y) zeroHeading = Heading;
 
             if (gpad.right_trigger > 0.25) robot.intake();
-            if (gpad.left_trigger > 0.25) robot.outtake();
+            if (gpad.right_bumper) robot.outtake();
             if (gpad.x) robot.quiet();
-            if (gpad.right_bumper) robot.fire();
+            if (gpad.xShift) robot.shooter(1700);
+            if (gpad.left_bumper) robot.fire();
 
             boolean aThis = gpad.a;
             if (aThis && !aLast) {
@@ -113,8 +128,6 @@ public class TestOp3 extends LinearOpMode {
             }
             bLast = bThis;
 
-            if (gpad.dpad_up) robot.setFireVelocity(robot.SHOOTER_VELOCITY_NORMAL);
-            if (gpad.dpad_down) robot.setFireVelocity(robot.SHOOTER_VELOCITY_LOW);
 
 
 
@@ -130,13 +143,22 @@ public class TestOp3 extends LinearOpMode {
                 dashboardTelemetry.addData("Shooter Ready", 1300);
             }
 
+            T265Camera.CameraUpdate up = slamra.getLastReceivedCameraUpdate();
+
+            if (up == null) return;
+
+            Y = (-1)*(up.pose.getTranslation().getY() / 0.0254);
+            X = (-1)*(up.pose.getTranslation().getX() / 0.0254);
+            Heading = (up.pose.getHeading()) * (57.295);
+
             dashboardTelemetry.addData("velocity", robot.shooter1.getVelocity());
             dashboardTelemetry.addData("x", x);
             dashboardTelemetry.addData("y", y);
             dashboardTelemetry.update();
-        }
 
-        t265Thread.interrupt();
+            telemetry.addData("Voltage", robot.getLRangeV());
+            telemetry.update();
+        }
         slamra.stop();
     }
 
@@ -174,55 +196,6 @@ public class TestOp3 extends LinearOpMode {
         }
     }
 
-    //Thread Class
-    private class T265Thread extends Thread {
-        public T265Thread()
-        {
-            this.setName("T265Thread");
-        }
 
-        @Override
-        public void run()
-        {
-
-            while (!isInterrupted())
-            {
-                T265Camera.CameraUpdate up = slamra.getLastReceivedCameraUpdate();
-
-                if (up == null) return;
-
-
-
-                if(CameraPos.equals(left)){
-                    // Initalize vars for X and Y coordinates and divide by 0.0254 to convert meters to inches
-                    Y = (-1)*(up.pose.getTranslation().getY() / 0.0254);
-                    X = (-1)*(up.pose.getTranslation().getX() / 0.0254);
-                    Heading = (up.pose.getHeading()) * (57.295);
-                }
-
-                if(CameraPos.equals(right)){
-                    // Initalize vars for X and Y coordinates and divide by 0.0254 to convert meters to inches
-                    Y = (up.pose.getTranslation().getY() / 0.0254);
-                    X = (up.pose.getTranslation().getX() / 0.0254);
-                }
-
-                if(CameraPos.equals(back)){
-                    // Initalize vars for X and Y coordinates and divide by 0.0254 to convert meters to inches
-                    Y = (-1)*(up.pose.getTranslation().getX() / 0.0254);
-                    X = (up.pose.getTranslation().getY() / 0.0254);
-                }
-
-                if(CameraPos.equals(front)){
-                    // Initalize vars for X and Y coordinates and divide by 0.0254 to convert meters to inches
-                    Y = (up.pose.getTranslation().getX() / 0.0254);
-                    X = (-1)*(up.pose.getTranslation().getY() / 0.0254);
-                }
-
-
-                Translation2d translation = new Translation2d(X, Y);
-                Rotation2d rotation = up.pose.getRotation();
-            }
-        }
-    }
 }
 

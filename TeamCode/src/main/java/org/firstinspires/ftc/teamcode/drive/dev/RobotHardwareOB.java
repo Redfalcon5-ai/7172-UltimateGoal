@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.drive.dev;
 
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
@@ -29,7 +30,7 @@ public class RobotHardwareOB
     public final double CONVEYOR_POWER_OFF = 0;
     public final double INDEXER_POSITION_LOAD = 0.5;
     public final double INDEXER_POSITION_FIRE = 0.6;
-    public final double SHOOTER_VELOCITY_NORMAL = 1700;
+    public final double SHOOTER_VELOCITY_NORMAL = 1660;
     public final double SHOOTER_VELOCITY_LOW = 1400;
     public final double SHOOTER_VELOCITY_OFF = 0;
     public final double GRABBER_POSITION_CLOSE = 0.025;
@@ -64,6 +65,9 @@ public class RobotHardwareOB
 
     public BNO055IMU imu = null;
 
+    public AnalogInput lrange = null;
+    public double lrangeV = 0;
+
     //Create Hardware Map Object
     HardwareMap hwMap = null;
 
@@ -92,6 +96,8 @@ public class RobotHardwareOB
         colorv3 = hwMap.get(NormalizedColorSensor.class, "colorv3");
         wobble = (DcMotorEx)hwMap.get(DcMotor.class, "wobble");
         grabber = hwMap.get(Servo.class, "grabber");
+
+        lrange = hwMap.get(AnalogInput.class, "lrange");
 
         // Set all motors to zero power
         //Set servos to starting position
@@ -284,6 +290,8 @@ public class RobotHardwareOB
         }
         wobble.setVelocity(wobbleVelocity);
     }
+
+
 
 }
 

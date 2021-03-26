@@ -59,8 +59,8 @@ public class DualPad {
     public double right_stick_y;
 
     public void mergePads(Gamepad gpad1, Gamepad gpad2 ){
-        shift1 = gpad1.left_bumper;
-        shift2 = gpad2.left_bumper;
+        shift1 = gpad1.left_trigger > 0.25;
+        shift2 = gpad2.left_trigger > 0.25;
 
         left_stick_x = gpad1.left_stick_x;
         if (left_stick_x == 0) left_stick_x = gpad2.left_stick_x;
