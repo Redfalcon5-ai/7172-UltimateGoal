@@ -1,10 +1,9 @@
-package org.firstinspires.ftc.teamcode.drive.dev;
+package org.firstinspires.ftc.teamcode.drive.Hedrick;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.arcrobotics.ftclib.geometry.Transform2d;
-import com.arcrobotics.ftclib.geometry.Translation2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -12,11 +11,12 @@ import com.spartronics4915.lib.T265Camera;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.util.DualPad;
+import org.firstinspires.ftc.teamcode.util.RobotHardwareAS;
 
 
 @TeleOp
 
-public class TestOp3 extends LinearOpMode {
+public class PIDTune extends LinearOpMode {
     RobotHardwareAS robot = new RobotHardwareAS();
     DualPad gpad = new DualPad();
     FtcDashboard dashboard = FtcDashboard.getInstance();
@@ -83,28 +83,57 @@ public class TestOp3 extends LinearOpMode {
             double jw = gpad.left_stick_x;   // turning
             if (jx >= 0.5 || jx <= -0.5) targetHeading = zeroHeading;
             if (jw != 0) targetHeading = 9999;
+
             if (gpad.dpad_right) {
-                robot.driveYDH(jy, 0.14, zeroHeading, Heading);
+                if(slam) {
+                    robot.driveYDH(jy, 0.14, zeroHeading, Heading);
+                }
+                else if(!slam){
+                    robot.driveYDH(jy, 0.14, zeroHeading);
+                }
                 robot.setFireVelocity(robot.SHOOTER_VELOCITY_NORMAL);
             }
             else if (gpad.dpad_up) {
-                robot.driveYDH(jy, 0.101, zeroHeading, Heading);
+                if(slam) {
+                    robot.driveYDH(jy, 0.101, zeroHeading, Heading);
+                }
+                else if(!slam){
+                    robot.driveYDH(jy, 0.101, zeroHeading);
+                }
                 robot.setFireVelocity(robot.SHOOTER_VELOCITY_LOW);
             }
             else if (gpad.dpad_left) {
-                robot.driveYDH(jy, 0.0685, zeroHeading, Heading);
+                if(slam) {
+                    robot.driveYDH(jy, 0.0685, zeroHeading, Heading);
+                }
+                else if(!slam){
+                    robot.driveYDH(jy, 0.0685, zeroHeading);
+                }
                 robot.setFireVelocity(robot.SHOOTER_VELOCITY_LOW);
             }
             else if (gpad.dpad_down) {
-                robot.driveYDH(jy, 0.058, zeroHeading, Heading);
+                if(slam) {
+                    robot.driveYDH(jy, 0.058, zeroHeading, Heading);
+                }
+                else if(!slam){
+                    robot.driveYDH(jy, 0.058, zeroHeading);
+                }
                 robot.setFireVelocity(robot.SHOOTER_VELOCITY_LOW);
             }
+
             else if (wgflip || targetHeading == 9999)
                 robot.driveYXW(jy, jx, jw);
-            else
-                //robot.driveYXH(jy, jx, targetHeading);
-                robot.driveYXH(jy, jx, targetHeading, Heading);
-            if (gpad.y) zeroHeading = Heading;
+            else {
+                if (slam) {
+                    robot.driveYXH(jy, jx, targetHeading, Heading);
+                } else if (!slam) {
+                    robot.driveYXH(jy, jx, targetHeading);
+                }
+            }
+
+            if (gpad.y){
+                zeroHeading = robot.getIMUHeading();
+            }
 
             if (gpad.right_trigger > 0.25) robot.intake();
             if (gpad.right_bumper) robot.outtake();
@@ -143,13 +172,12 @@ public class TestOp3 extends LinearOpMode {
                 dashboardTelemetry.addData("Shooter Ready", 1300);
             }
 
-            T265Camera.CameraUpdate up = slamra.getLastReceivedCameraUpdate();
-
-            if (up == null) return;
-
-            Y = (-1)*(up.pose.getTranslation().getY() / 0.0254);
-            X = (-1)*(up.pose.getTranslation().getX() / 0.0254);
-            Heading = (up.pose.getHeading()) * (57.295);
+            if(slam) {
+                T265Camera.CameraUpdate up = slamra.getLastReceivedCameraUpdate();
+                Y = (-1) * (up.pose.getTranslation().getY() / 0.0254);
+                X = (-1) * (up.pose.getTranslation().getX() / 0.0254);
+                Heading = (up.pose.getHeading()) * (57.295);
+            }
 
             dashboardTelemetry.addData("velocity", robot.shooter1.getVelocity());
             dashboardTelemetry.addData("x", x);
@@ -159,7 +187,10 @@ public class TestOp3 extends LinearOpMode {
             telemetry.addData("Voltage", robot.getLRangeV());
             telemetry.update();
         }
-        slamra.stop();
+
+        if(slam) {
+            slamra.stop();
+        }
     }
 
     public void mecDrive(double forward, double forward2, double turn, double strafe) {

@@ -1,7 +1,7 @@
-package org.firstinspires.ftc.teamcode.drive.dev;
+package org.firstinspires.ftc.teamcode.util;
 
-import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
@@ -19,22 +19,21 @@ import com.qualcomm.robotcore.hardware.Servo;
 public class RobotHardwareOB
 {
 
-    public final double INTAKE_POWER_IN = 1.0;
+    public final double INTAKE_POWER_INTAKE = 1;
     public final double INTAKE_POWER_OFF = 0;
-    public final double INTAKE_POWER_OUT = -1.0;
-    public final double CONVEYOR_POWER_IN = 0.90;
-    public final double CONVEYOR_POWER_FIRE = 0.55;
-    public final double CONVEYOR_POWER_LOAD = 0.55;
-    public final double CONVEYOR_POWER_LOADED = 0.55;
-    public final double CONVEYOR_POWER_OUT = -0.75;
+    public final double INTAKE_POWER_OUTTAKE = -1.0;
+    public final double CONVEYOR_POWER_INTAKE = 0.90;
+    public final double CONVEYOR_POWER_FIRE = 0.75;
+    public final double CONVEYOR_POWER_OUTTAKE = -0.75;
     public final double CONVEYOR_POWER_OFF = 0;
+    public final double INDEXER_POSITION_OFF = 0.5;
     public final double INDEXER_POSITION_LOAD = 0.5;
-    public final double INDEXER_POSITION_FIRE = 0.6;
-    public final double SHOOTER_VELOCITY_NORMAL = 1660;
+    public final double INDEXER_POSITION_FIRE = 0;
+    public final double SHOOTER_VELOCITY_NORMAL = 1700;
     public final double SHOOTER_VELOCITY_LOW = 1400;
     public final double SHOOTER_VELOCITY_OFF = 0;
-    public final double GRABBER_POSITION_CLOSE = 0.025;
-    public final double GRABBER_POSITION_OPEN = 0.5;
+    public final double GRABBER_POSITION_CLOSE = 0.065;
+    public final double GRABBER_POSITION_OPEN = 0.85;
     public final double WOBBLE_VELOCITY_STOW = -700;
     public final double WOBBLE_VELOCITY_FLIP = 700;
     public final double TILT_POSITION_INIT = 0.66;
@@ -57,16 +56,23 @@ public class RobotHardwareOB
     public Servo tilt = null;
     public Servo indexer = null;
     public DcMotorEx shooter1 = null;
-    public DigitalChannel touch = null;
     public DigitalChannel magnet = null;
     public NormalizedColorSensor colorv3 = null;
     public DcMotorEx wobble = null;
     public Servo grabber = null;
 
+    public DigitalChannel led6 = null;
+    public DigitalChannel led7 = null;
+
     public BNO055IMU imu = null;
+    public BNO055IMU imu1 = null;
 
     public AnalogInput lrange = null;
     public double lrangeV = 0;
+
+    public AnalogInput pixy0 = null;
+    public AnalogInput pixy1 = null;
+    public double pixyV = 0;
 
     //Create Hardware Map Object
     HardwareMap hwMap = null;
@@ -74,6 +80,7 @@ public class RobotHardwareOB
     public double intakePower = 0.0;
     public double conveyorPower = 0.0;
     public double fireVelocity = SHOOTER_VELOCITY_NORMAL;
+    public ElapsedTime intakeTimer = new ElapsedTime();
 
     //Initialize Hardware That
     //Comes from the Config
@@ -91,13 +98,13 @@ public class RobotHardwareOB
         tilt = hwMap.get(Servo.class, "tilt");
         indexer = hwMap.get(Servo.class, "indexer");
         shooter1 = (DcMotorEx)hwMap.get(DcMotor.class, "shooter1");
-        touch = hwMap.get(DigitalChannel.class, "touch");
-        magnet = hwMap.get(DigitalChannel.class, "magnet");
         colorv3 = hwMap.get(NormalizedColorSensor.class, "colorv3");
         wobble = (DcMotorEx)hwMap.get(DcMotor.class, "wobble");
         grabber = hwMap.get(Servo.class, "grabber");
 
         lrange = hwMap.get(AnalogInput.class, "lrange");
+        pixy0 = hwMap.get(AnalogInput.class, "pixy0");
+        pixy1 = hwMap.get(AnalogInput.class, "pixy1");
 
         // Set all motors to zero power
         //Set servos to starting position
@@ -111,7 +118,7 @@ public class RobotHardwareOB
         indexer.setPosition(INDEXER_POSITION_LOAD);
         shooter1.setPower(0);
         wobble.setPower(0);
-        grabber.setPosition(0.5);
+        grabber.setPosition(GRABBER_POSITION_OPEN);
 
         // Set all motors to run without encoders
         //Set mode for sensors
@@ -130,26 +137,36 @@ public class RobotHardwareOB
         shooter1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter1.setVelocityPIDFCoefficients(150, 0, 0, 13);
         wobble.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        touch.setMode(DigitalChannel.Mode.INPUT);
-        magnet.setMode(DigitalChannel.Mode.INPUT);
 
         BNO055IMU.Parameters params = new BNO055IMU.Parameters();
         params.angleUnit = BNO055IMU.AngleUnit.DEGREES;
         params.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
         imu = hwMap.get(BNO055IMU.class, "imu");
         imu.initialize(params);
+        imu1 = hwMap.get(BNO055IMU.class, "imu1");
+        imu1.initialize(params);
+
+        led6 = hwMap.get(DigitalChannel.class, "led6");
+        led6.setMode(DigitalChannel.Mode.OUTPUT);
+        led6.setState(false);
+
+        led7 = hwMap.get(DigitalChannel.class, "led7");
+        led7.setMode(DigitalChannel.Mode.OUTPUT);
+        led7.setState(false);
+
     }
 
     public void intake() {
-        intakePower = INTAKE_POWER_IN;
-        conveyorPower = CONVEYOR_POWER_IN;
+        intakePower = INTAKE_POWER_INTAKE;
+        conveyorPower = CONVEYOR_POWER_INTAKE;
+        intakeTimer.reset();
         if (smode == ShootMode.IDLE)
             setShootMode(ShootMode.LOAD);
     }
 
     public void outtake() {
-        intakePower = INTAKE_POWER_OUT;
-        conveyorPower = CONVEYOR_POWER_OUT;
+        intakePower = INTAKE_POWER_OUTTAKE;
+        conveyorPower = CONVEYOR_POWER_OUTTAKE;
     }
 
     public void shooter(double v) {
@@ -161,8 +178,7 @@ public class RobotHardwareOB
     }
 
     public void fire() {
-        if (smode == ShootMode.LOAD)
-            setShootMode(ShootMode.TRIGGER);
+        setShootMode(ShootMode.TRIGGER);
     }
 
     public void quiet() {
@@ -174,45 +190,41 @@ public class RobotHardwareOB
     }
 
     public void setShootMode(ShootMode s) {
-        smode = s;
-        smodeTimer.reset();
+        if (smode != s) {
+            smode = s;
+            smodeTimer.reset();
+        }
     }
 
     public void updateAll() {
-        if (smode == ShootMode.LOAD) {
-            if (isRingLoaded()) shooter(fireVelocity);
-            if (conveyorPower == 0) {  // intake can override this
-                conveyorPower = isRingLoaded()
-                        ? CONVEYOR_POWER_LOADED
-                        : CONVEYOR_POWER_LOAD;
-            }
-        }
-        if (smode == ShootMode.TRIGGER) {
+        double indexerPos = INDEXER_POSITION_OFF;
+        if (smode == ShootMode.TRIGGER) {   // "fire" button requested
             conveyorPower = CONVEYOR_POWER_FIRE;
-            if(smodeTimer.seconds() > 2){
-                smode = ShootMode.LOAD;
-            }
-            else if (isShooterReady()) {
-                indexer.setPosition(INDEXER_POSITION_FIRE);
-                setShootMode(ShootMode.FIRE);
-            }
+            indexerPos = INDEXER_POSITION_LOAD;
+            shooter(fireVelocity);
+            if (isShooterReady()) setShootMode(ShootMode.FIRE);
+            if (smodeTimer.seconds() > 1.0)
+                setShootMode(ShootMode.LOAD);
         }
         if (smode == ShootMode.FIRE) {
+            indexerPos = INDEXER_POSITION_FIRE;
             conveyorPower = CONVEYOR_POWER_FIRE;
-            if (!isRingLoaded() || smodeTimer.seconds() > 0.60) {
-                indexer.setPosition(INDEXER_POSITION_LOAD);
-                setShootMode(ShootMode.RECOVER);
+            if (smodeTimer.seconds() > 0.2) {
+                setShootMode(ShootMode.LOAD);
             }
         }
-        if (smode == ShootMode.RECOVER) {
-            if (smodeTimer.seconds() > 0.1)
-                setShootMode(ShootMode.LOAD);
+        if (smode == ShootMode.LOAD) {
+            indexerPos = INDEXER_POSITION_LOAD;
+            if (isRingLoaded()) shooter(fireVelocity);
         }
 
         updateWG();
 
+        if (intakeTimer.seconds() < 1) conveyorPower = CONVEYOR_POWER_INTAKE;
+
         intake.setPower(motorPower(intakePower));
         conveyor.setPower(motorPower(conveyorPower));
+        indexer.setPosition(indexerPos);
 
         intakePower = delatch(intakePower);
         conveyorPower = delatch(conveyorPower);
@@ -232,20 +244,36 @@ public class RobotHardwareOB
     }
 
     public boolean isRingLoaded() {
-        return ((DistanceSensor)colorv3).getDistance(DistanceUnit.CM) < 4;
+        boolean s = ((DistanceSensor)colorv3).getDistance(DistanceUnit.CM) < 4;
+        if (s != led6.getState()) led6.setState(s);
+        return s;
+    }
+
+    public boolean isFlyReady() {
+        double vel = shooter1.getVelocity();
+        boolean s = (vel >= fireVelocity -40 && vel <= fireVelocity + 20);
+        if (s != led7.getState()) led7.setState(s);
+        return s;
     }
 
     public boolean isShooterReady() {
-        double vel = shooter1.getVelocity();
-        return isRingLoaded()
-                && vel >= fireVelocity - 20
-                && vel <= fireVelocity + 20;
+        return isRingLoaded() && isFlyReady();
     }
 
     public double getIMUHeading() {
         Orientation angles = imu.getAngularOrientation(
                 AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         return angles.firstAngle;
+    }
+
+    public double getIMU1Heading() {
+        Orientation angles = imu1.getAngularOrientation(
+                AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        return angles.firstAngle;
+    }
+
+    public double getHeading() {
+        return getIMUHeading();
     }
 
     public void driveYXW(double ry, double rx, double rw) {
@@ -256,10 +284,6 @@ public class RobotHardwareOB
         rb.setPower(ry - rw + rx);
     }
 
-    public void driveYXH(double ry, double rx, double th) {
-        double h = getIMUHeading() - th;
-        driveYXW(ry, rx, h * 0.02);
-    }
 
     public void wgStow() { setWGMode(WGMode.STOW); }
 
@@ -291,7 +315,35 @@ public class RobotHardwareOB
         wobble.setVelocity(wobbleVelocity);
     }
 
+    public double getLRangeV() {
+        return lrange.getVoltage();
+    }
 
+    // drive robot forward/strafe, maintain heading of th
+    public void driveYXH(double ry, double rx, double th) {
+        double herror = getHeading() - th;
+        driveYXW(ry, rx, herror * 0.015);
+    }
+
+    // drive robot forward, maintain heading th and distance from wall dv
+    public void driveYDH(double ry, double dv, double th) {
+        double herror = getHeading() - th;
+        double derror = dv - getLRangeV();
+        if (herror < -10 || herror > 10) derror = 0;
+        driveYXW(ry, derror * 25, herror * 0.02);
+    }
+
+    public double getPixyV() {
+        if (pixy1.getVoltage() > 1.5) pixyV = pixy0.getVoltage();
+        return pixyV;
+    }
+
+    // drive robot forward/strafe, maintain heading of pixy center
+    public void driveYXP(double ry, double rx, double pxv) {
+        double perror = 0;
+        if (pixy1.getVoltage() > 1.5) perror = pixy0.getVoltage() - pxv;
+        driveYXW(ry, rx, perror * 0.3);
+    }
 
 }
 
