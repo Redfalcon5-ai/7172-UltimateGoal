@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.drive.Hedrick;
+package org.firstinspires.ftc.teamcode.drive.Crowley;
 
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
@@ -7,7 +7,6 @@ import com.acmerobotics.roadrunner.trajectory.constraints.MecanumVelocityConstra
 import com.acmerobotics.roadrunner.trajectory.constraints.MinVelocityConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.ProfileAccelerationConstraint;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -22,9 +21,9 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import java.util.Arrays;
 
-@Disabled
-@Autonomous(group="Mar20RedAuto2")
-public class Mar20RedAuto2 extends LinearOpMode
+
+@Autonomous(name="CrowleyBlueAuto", group="CrowleyRedAuto")
+public class CrowleyBlueAuto extends LinearOpMode
 {
     //Create elapsed time and robot hardware objects
     RobotHardwareAS robot   = new RobotHardwareAS();
@@ -40,7 +39,6 @@ public class Mar20RedAuto2 extends LinearOpMode
         robot.init(hardwareMap);
         robot.wgClose();
         robot.updateAll();
-        robot.tilt.setPosition(0.66);
 
 
         //Start OpenCV
@@ -59,14 +57,14 @@ public class Mar20RedAuto2 extends LinearOpMode
 
         //Set RR start Pose
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        com.acmerobotics.roadrunner.geometry.Pose2d startPose = new com.acmerobotics.roadrunner.geometry.Pose2d(-61.5, -32.5, Math.toRadians(0));
+        com.acmerobotics.roadrunner.geometry.Pose2d startPose = new com.acmerobotics.roadrunner.geometry.Pose2d(9, 41, Math.toRadians(0));
         drive.setPoseEstimate(startPose);
 
 
         //Universal trajectories
         Trajectory move1 = drive.trajectoryBuilder(startPose)
-                .splineTo(
-                        new Vector2d(-10, -16), Math.toRadians(0),
+                .lineToLinearHeading(
+                        new com.acmerobotics.roadrunner.geometry.Pose2d(27, 47, Math.toRadians(0)),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -77,14 +75,12 @@ public class Mar20RedAuto2 extends LinearOpMode
                 )
                 .build();
 
-        Trajectory move2 = drive.trajectoryBuilder(move1.end())
-                .strafeTo(new Vector2d(-10, -26))
-                .build();
+
 
         //Zero ring trajectories
-        Trajectory zero1 = drive.trajectoryBuilder(move2.end())
+        Trajectory zero1 = drive.trajectoryBuilder(move1.end())
                 .lineToLinearHeading(
-                        new com.acmerobotics.roadrunner.geometry.Pose2d(5, -60, Math.toRadians(-50)),
+                        new com.acmerobotics.roadrunner.geometry.Pose2d(62, 70, Math.toRadians(0)),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -97,7 +93,7 @@ public class Mar20RedAuto2 extends LinearOpMode
 
         Trajectory zero2 = drive.trajectoryBuilder(zero1.end())
                 .lineToLinearHeading(
-                        new com.acmerobotics.roadrunner.geometry.Pose2d(-34, -58.5, Math.toRadians(0)),
+                        new com.acmerobotics.roadrunner.geometry.Pose2d(30, 45.5, Math.toRadians(90)),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -110,7 +106,20 @@ public class Mar20RedAuto2 extends LinearOpMode
 
         Trajectory zero3 = drive.trajectoryBuilder(zero2.end())
                 .lineToLinearHeading(
-                        new com.acmerobotics.roadrunner.geometry.Pose2d(5, -50, Math.toRadians(-210)),
+                        new com.acmerobotics.roadrunner.geometry.Pose2d(70, 85, Math.toRadians(200)),
+                        new MinVelocityConstraint(
+                                Arrays.asList(
+                                        new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
+                                        new MecanumVelocityConstraint(30, DriveConstants.TRACK_WIDTH)
+                                )
+                        ),
+                        new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL)
+                )
+                .build();
+
+        Trajectory zero4 = drive.trajectoryBuilder(zero3.end())
+                .lineToLinearHeading(
+                        new com.acmerobotics.roadrunner.geometry.Pose2d(77, 50, Math.toRadians(0)),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -121,22 +130,14 @@ public class Mar20RedAuto2 extends LinearOpMode
                 )
                 .build();
 
-        Trajectory zero4 = drive.trajectoryBuilder(zero3.end())
-                .forward(1)
-                .build();
-
-        Trajectory zero5 = drive.trajectoryBuilder(zero4.end())
-                .strafeRight(10)
-                .build();
-
         //One ring trajectories
-        Trajectory one1 = drive.trajectoryBuilder(move2.end())
+        Trajectory one1 = drive.trajectoryBuilder(move1.end())
                 .lineToLinearHeading(
-                        new com.acmerobotics.roadrunner.geometry.Pose2d(22, -47, Math.toRadians(0)),
+                        new com.acmerobotics.roadrunner.geometry.Pose2d(37, 40, Math.toRadians(0)),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
-                                        new MecanumVelocityConstraint(50, DriveConstants.TRACK_WIDTH)
+                                        new MecanumVelocityConstraint(20, DriveConstants.TRACK_WIDTH)
                                 )
                         ),
                         new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL)
@@ -145,7 +146,7 @@ public class Mar20RedAuto2 extends LinearOpMode
 
         Trajectory one2 = drive.trajectoryBuilder(one1.end())
                 .lineToLinearHeading(
-                        new com.acmerobotics.roadrunner.geometry.Pose2d(0, -40, Math.toRadians(180)),
+                        new com.acmerobotics.roadrunner.geometry.Pose2d(37, 46, Math.toRadians(0)),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -158,11 +159,11 @@ public class Mar20RedAuto2 extends LinearOpMode
 
         Trajectory one3 = drive.trajectoryBuilder(one2.end())
                 .lineToLinearHeading(
-                        new com.acmerobotics.roadrunner.geometry.Pose2d(-24, -40, Math.toRadians(180)),
+                        new com.acmerobotics.roadrunner.geometry.Pose2d(98, 40, Math.toRadians(0)),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
-                                        new MecanumVelocityConstraint(20, DriveConstants.TRACK_WIDTH)
+                                        new MecanumVelocityConstraint(40, DriveConstants.TRACK_WIDTH)
                                 )
                         ),
                         new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL)
@@ -171,7 +172,7 @@ public class Mar20RedAuto2 extends LinearOpMode
 
         Trajectory one4 = drive.trajectoryBuilder(one3.end())
                 .lineToLinearHeading(
-                        new com.acmerobotics.roadrunner.geometry.Pose2d(-24, -55, Math.toRadians(0)),
+                        new com.acmerobotics.roadrunner.geometry.Pose2d(37, 33, Math.toRadians(40)),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -184,11 +185,11 @@ public class Mar20RedAuto2 extends LinearOpMode
 
         Trajectory one5 = drive.trajectoryBuilder(one4.end())
                 .lineToLinearHeading(
-                        new com.acmerobotics.roadrunner.geometry.Pose2d(-32, -61, Math.toRadians(0)),
+                        new com.acmerobotics.roadrunner.geometry.Pose2d(92, 50, Math.toRadians(180)),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
-                                        new MecanumVelocityConstraint(20, DriveConstants.TRACK_WIDTH)
+                                        new MecanumVelocityConstraint(50, DriveConstants.TRACK_WIDTH)
                                 )
                         ),
                         new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL)
@@ -196,51 +197,30 @@ public class Mar20RedAuto2 extends LinearOpMode
                 .build();
 
         Trajectory one6 = drive.trajectoryBuilder(one5.end())
-                .lineToLinearHeading(
-                        new com.acmerobotics.roadrunner.geometry.Pose2d(-10, -30, Math.toRadians(0)),
-                        new MinVelocityConstraint(
-                                Arrays.asList(
-                                        new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
-                                        new MecanumVelocityConstraint(50, DriveConstants.TRACK_WIDTH)
-                                )
-                        ),
-                        new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL)
-                )
-                .build();
-
-        Trajectory one7 = drive.trajectoryBuilder(one6.end())
-                .lineToLinearHeading(
-                        new com.acmerobotics.roadrunner.geometry.Pose2d(27, -33, Math.toRadians(160)),
-                        new MinVelocityConstraint(
-                                Arrays.asList(
-                                        new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
-                                        new MecanumVelocityConstraint(50, DriveConstants.TRACK_WIDTH)
-                                )
-                        ),
-                        new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL)
-                )
-                .build();
-
-        Trajectory one8 = drive.trajectoryBuilder(one7.end())
                 .forward(10)
                 .build();
 
+
         //Four ring trajectories
-        Trajectory four1 = drive.trajectoryBuilder(move2.end())
-                .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(60, -46, Math.toRadians(-90)))
+        Trajectory four1 = drive.trajectoryBuilder(move1.end())
+                .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(36, 40, Math.toRadians(0)))
                 .build();
 
         Trajectory four2 = drive.trajectoryBuilder(four1.end())
-                .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(-35, -62, Math.toRadians(0)))
+                .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(36, 45, Math.toRadians(0)))
                 .build();
 
         Trajectory four3 = drive.trajectoryBuilder(four2.end())
-                .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(-47, -40, Math.toRadians(0)))
+                .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(-35, -65, Math.toRadians(0)))
                 .build();
 
         Trajectory four4 = drive.trajectoryBuilder(four3.end())
+                .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(-47, -35, Math.toRadians(0)))
+                .build();
+
+        Trajectory four5 = drive.trajectoryBuilder(four4.end())
                 .lineToLinearHeading(
-                        new com.acmerobotics.roadrunner.geometry.Pose2d(-36, -42, Math.toRadians(3)),
+                        new com.acmerobotics.roadrunner.geometry.Pose2d(-35, -40, Math.toRadians(5)),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -251,9 +231,9 @@ public class Mar20RedAuto2 extends LinearOpMode
                 )
                 .build();
 
-        Trajectory four5 = drive.trajectoryBuilder(four4.end())
+        Trajectory four6 = drive.trajectoryBuilder(four5.end())
                 .lineToLinearHeading(
-                        new com.acmerobotics.roadrunner.geometry.Pose2d(-12, -42, Math.toRadians(3)),
+                        new com.acmerobotics.roadrunner.geometry.Pose2d(-12, -38, Math.toRadians(5)),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -264,12 +244,21 @@ public class Mar20RedAuto2 extends LinearOpMode
                 )
                 .build();
 
-        Trajectory four6 = drive.trajectoryBuilder(four5.end())
-                .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(48, -53, Math.toRadians(160)))
+        Trajectory four7 = drive.trajectoryBuilder(four6.end())
+                .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(54, -47, Math.toRadians(160)))
                 .build();
 
-        Trajectory four7 = drive.trajectoryBuilder(four6.end())
-                .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(16, -47, Math.toRadians(0)))
+        Trajectory four8 = drive.trajectoryBuilder(four7.end())
+                .lineToLinearHeading(
+                        new com.acmerobotics.roadrunner.geometry.Pose2d(16, -47, Math.toRadians(5)),
+                        new MinVelocityConstraint(
+                                Arrays.asList(
+                                        new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
+                                        new MecanumVelocityConstraint(40, DriveConstants.TRACK_WIDTH)
+                                )
+                        ),
+                        new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL)
+                )
                 .build();
 
         int rings = 0;
@@ -310,11 +299,13 @@ public class Mar20RedAuto2 extends LinearOpMode
         waitForStart();
 
         robot.shooter(1600);
-        robot.intake();
-        robot.updateAll(1600);
+        robot.setArms(false);
 
         drive.followTrajectory(move1);
-        drive.followTrajectory(move2);
+
+        robot.outtake();
+        robot.updateAll(1600);
+        robot.updateAll(1600);
 
         sleep(500);
 
@@ -324,6 +315,8 @@ public class Mar20RedAuto2 extends LinearOpMode
             robot.updateAll(1600);
         }
 
+        robot.intake();
+        robot.updateAll(1600);
         robot.updateAll(1600);
         sleep(500);
 
@@ -333,8 +326,15 @@ public class Mar20RedAuto2 extends LinearOpMode
             robot.updateAll(1600);
         }
 
+        robot.fire();
+        while(robot.smode != RobotHardwareOB.ShootMode.LOAD){
+            robot.updateAll(1600);
+        }
+
         robot.intake();
         robot.updateAll(1600);
+        robot.updateAll(1600);
+        sleep(500);
 
         //Shot 3
         robot.fire();
@@ -346,83 +346,134 @@ public class Mar20RedAuto2 extends LinearOpMode
 
         robot.quiet();
         robot.updateAll(1600);
-        robot.intake();
-        robot.updateAll(1600);
+
 
         if (rings == 0){
+            robot.outtake();
+            robot.updateAll(1600);
             drive.followTrajectory(zero1);
-            robot.grabber.setPosition(0.5);
+            robot.wgOpen();
+            robot.updateAll();
             sleep(1000);
-            robot.wobble.setVelocity(750);
-            sleep(1000);
-            robot.wobble.setVelocity(0);
+            robot.wgFlip();
+            robot.updateAll();
             drive.followTrajectory(zero2);
-            robot.grabber.setPosition(0.025);
+            sleep(1000);
+            robot.wgClose();
+            robot.updateAll();
             sleep(1000);
             drive.followTrajectory(zero3);
-            robot.grabber.setPosition(0.5);
+            robot.wgOpen();
+            robot.updateAll();
+            sleep(1000);
+            robot.wgStow();
+            robot.updateAll();
             sleep(1000);
             drive.followTrajectory(zero4);
-            robot.wobble.setVelocity(-750);
-            sleep(1000);
-            robot.wobble.setVelocity(0);
-            drive.followTrajectory(zero5);
         }
+
+
 
 
         if (rings == 1){
-            robot.tilt.setPosition(0.61);
+            robot.shooter(1580);
+            robot.intake();
+            robot.updateAll(1580);
             drive.followTrajectory(one1);
-            robot.grabber.setPosition(0.5);
-            sleep(1000);
-            robot.wobble.setVelocity(750);
-            sleep(1000);
-            robot.wobble.setVelocity(0);
             drive.followTrajectory(one2);
+
+            robot.fire();
+            while(robot.smode != RobotHardwareOB.ShootMode.LOAD){
+                robot.updateAll(1580);
+            }
+
+            robot.fire();
+            while(robot.smode != RobotHardwareOB.ShootMode.LOAD){
+                robot.updateAll(1580);
+            }
+
+            sleep(1000);
+
             drive.followTrajectory(one3);
+            robot.quiet();
+            robot.wgOpen();
+            robot.updateAll();
+            robot.wgFlip();
+            robot.updateAll();
+            robot.intake();
+            robot.updateAll();
+            sleep(1000);
+
             drive.followTrajectory(one4);
+            robot.wgClose();
+            robot.updateAll();
+            sleep(1000);
+
             drive.followTrajectory(one5);
-            sleep(1000);
-            robot.grabber.setPosition(0.025);
-            sleep(1000);
-            robot.intake.setPower(0);
-            robot.shooter(1600);
+            robot.wgOpen();
+            robot.updateAll();
+            robot.wgStow();
+            robot.updateAll();
             drive.followTrajectory(one6);
 
-            robot.indexer.setPosition(0.85);
-            sleep(300);
-            robot.indexer.setPosition(0.5);
-
-
-            drive.followTrajectory(one7);
-            robot.shooter(0);
-            robot.conveyor.setPower(-1);
-            robot.grabber.setPosition(0.5);
-            sleep(1000);
-            drive.followTrajectory(one8);
-            robot.wobble.setVelocity(-750);
-            sleep(1000);
-            robot.wobble.setVelocity(0);
         }
+
+
 
         if (rings == 4){
             drive.followTrajectory(four1);
+            for(int i = 0; i < 3; i++){
+                robot.intake();
+                robot.updateAll(1600);
+                sleep(250);
+                robot.updateAll(1600);
+                sleep(250);
+            }
+
+            drive.followTrajectory(four2);
+
+            robot.intake();
+            robot.updateAll(1600);
+            robot.fire();
+            while(robot.smode != RobotHardwareOB.ShootMode.LOAD){
+                robot.updateAll(1600);
+            }
+
+            robot.intake();
+            robot.updateAll(1600);
+            robot.updateAll(1600);
+            sleep(500);
+
+            //Shot 2
+            robot.fire();
+            while(robot.smode != RobotHardwareOB.ShootMode.LOAD){
+                robot.updateAll(1600);
+            }
+
+            robot.fire();
+            while(robot.smode != RobotHardwareOB.ShootMode.LOAD){
+                robot.updateAll(1600);
+            }
+
+
+
+            /*
+
             robot.wgOpen();
             robot.updateAll(1600);
             robot.wgFlip();
             robot.updateAll(1600);
             drive.followTrajectory(four2);
+            drive.followTrajectory(four3);
             sleep(500);
             robot.wgClose();
-            robot.intake();
             robot.updateAll(1600);
             sleep(500);
-            drive.followTrajectory(four3);
             drive.followTrajectory(four4);
+            drive.followTrajectory(four5);
             robot.shooter(1600);
-            robot.updateAll(1600);
 
-            sleep(500);
+
 
             robot.fire();
             while(robot.smode != RobotHardwareOB.ShootMode.LOAD){
@@ -430,36 +481,41 @@ public class Mar20RedAuto2 extends LinearOpMode
             }
             robot.intake();
             robot.updateAll(1600);
-
-            drive.followTrajectory(four5);
-
-            sleep(500);
-
-            robot.fire();
-            while(robot.smode != RobotHardwareOB.ShootMode.LOAD){
-                robot.updateAll(1600);
-            }
-
-            robot.fire();
-            while(robot.smode != RobotHardwareOB.ShootMode.LOAD){
-                robot.updateAll(1600);
-            }
-
-            robot.fire();
-            while(robot.smode != RobotHardwareOB.ShootMode.LOAD){
-                robot.updateAll(1600);
-            }
-
-            sleep(500);
 
             drive.followTrajectory(four6);
+
+            sleep(500);
+
+            robot.fire();
+            while(robot.smode != RobotHardwareOB.ShootMode.LOAD){
+                robot.updateAll(1600);
+            }
+
+            robot.fire();
+            while(robot.smode != RobotHardwareOB.ShootMode.LOAD){
+                robot.updateAll(1600);
+            }
+
+            robot.fire();
+            while(robot.smode != RobotHardwareOB.ShootMode.LOAD){
+                robot.updateAll(1600);
+            }
+
+            sleep(500);
+
+            drive.followTrajectory(four7);
             robot.wgOpen();
             robot.updateAll(1600);
             robot.wgStow();
             robot.updateAll(1600);
 
-            drive.followTrajectory(four7);
+            drive.followTrajectory(four8);
+            */
+
+
         }
+
+
 
 
 

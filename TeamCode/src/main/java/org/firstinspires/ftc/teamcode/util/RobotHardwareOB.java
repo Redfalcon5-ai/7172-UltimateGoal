@@ -23,20 +23,31 @@ public class RobotHardwareOB
     public final double INTAKE_POWER_OFF = 0;
     public final double INTAKE_POWER_OUTTAKE = -1.0;
     public final double CONVEYOR_POWER_INTAKE = 0.90;
-    public final double CONVEYOR_POWER_FIRE = 0.75;
+    public final double CONVEYOR_POWER_FIRE = 0.90;
     public final double CONVEYOR_POWER_OUTTAKE = -0.75;
     public final double CONVEYOR_POWER_OFF = 0;
     public final double INDEXER_POSITION_OFF = 0.5;
     public final double INDEXER_POSITION_LOAD = 0.5;
     public final double INDEXER_POSITION_FIRE = 0;
-    public final double SHOOTER_VELOCITY_NORMAL = 1700;
-    public final double SHOOTER_VELOCITY_LOW = 1400;
+    public final double SHOOTER_VELOCITY_NORMAL = 1600;
+    public final double SHOOTER_VELOCITY_LOW = 1500;
     public final double SHOOTER_VELOCITY_OFF = 0;
     public final double GRABBER_POSITION_CLOSE = 0.065;
     public final double GRABBER_POSITION_OPEN = 0.85;
     public final double WOBBLE_VELOCITY_STOW = -700;
     public final double WOBBLE_VELOCITY_FLIP = 700;
     public final double TILT_POSITION_INIT = 0.66;
+    public final double RPIXY_TARGET_VOLT = 1.95;
+    public final double RPIXY_TARGET_RANGE = 0.2;
+    public final double RPIXY_TARGET_OFFSET[] = { 0, 0.40, 0.65, 0.9 };
+    public final double BPIXY_TARGET_VOLT = 1.936;
+    public final double BPIXY_TARGET_RANGE = 0.2;
+    public final double BPIXY_TARGET_OFFSET[] = { 0, -0.40, -0.65, -0.9 };
+
+    public final double LARM_POSITION_UP = 0.4;
+    public final double LARM_POSITION_DOWN = 0.75;
+    public final double RARM_POSITION_UP = 0.6;
+    public final double RARM_POSITION_DOWN = 0.2;
 
     public enum ShootMode { IDLE, LOAD, TRIGGER, FIRE, RECOVER }
     public ShootMode smode = ShootMode.IDLE;
@@ -61,8 +72,13 @@ public class RobotHardwareOB
     public DcMotorEx wobble = null;
     public Servo grabber = null;
 
-    public DigitalChannel led6 = null;
-    public DigitalChannel led7 = null;
+    public Servo larm = null;
+    public Servo rarm = null;
+
+    public DigitalChannel ledr0 = null;
+    public DigitalChannel ledr1 = null;
+    public DigitalChannel ledg0 = null;
+    public DigitalChannel ledg1 = null;
 
     public BNO055IMU imu = null;
     public BNO055IMU imu1 = null;
@@ -70,9 +86,17 @@ public class RobotHardwareOB
     public AnalogInput lrange = null;
     public double lrangeV = 0;
 
-    public AnalogInput pixy0 = null;
-    public AnalogInput pixy1 = null;
+    public AnalogInput rpixyvolt = null;
+    public AnalogInput rpixytrig = null;
+    public AnalogInput bpixyvolt = null;
+    public AnalogInput bpixytrig = null;
+    public AnalogInput pixyvolt = null;
+    public AnalogInput pixytrig = null;
     public double pixyV = 0;
+    public double pixyTargetBase = RPIXY_TARGET_VOLT;
+    public double pixyTargetV = RPIXY_TARGET_VOLT;
+    public double pixyTargetR = RPIXY_TARGET_RANGE;
+    public double[] pixyTargetVOff = RPIXY_TARGET_OFFSET;
 
     //Create Hardware Map Object
     HardwareMap hwMap = null;
@@ -95,16 +119,21 @@ public class RobotHardwareOB
         rb = hwMap.get(DcMotor.class, "rb");
         intake = hwMap.get(DcMotor.class, "intake");
         conveyor = hwMap.get(DcMotor.class, "conveyor");
-        tilt = hwMap.get(Servo.class, "tilt");
+        // tilt = hwMap.get(Servo.class, "tilt");
         indexer = hwMap.get(Servo.class, "indexer");
+        larm = hwMap.get(Servo.class, "larm");
+        rarm = hwMap.get(Servo.class, "rarm");
         shooter1 = (DcMotorEx)hwMap.get(DcMotor.class, "shooter1");
         colorv3 = hwMap.get(NormalizedColorSensor.class, "colorv3");
         wobble = (DcMotorEx)hwMap.get(DcMotor.class, "wobble");
         grabber = hwMap.get(Servo.class, "grabber");
 
         lrange = hwMap.get(AnalogInput.class, "lrange");
-        pixy0 = hwMap.get(AnalogInput.class, "pixy0");
-        pixy1 = hwMap.get(AnalogInput.class, "pixy1");
+        rpixyvolt = hwMap.get(AnalogInput.class, "rpixyvolt");
+        rpixytrig = hwMap.get(AnalogInput.class, "rpixytrig");
+        bpixyvolt = hwMap.get(AnalogInput.class, "bpixyvolt");
+        bpixytrig = hwMap.get(AnalogInput.class, "bpixytrig");
+        setPixyBlue();
 
         // Set all motors to zero power
         //Set servos to starting position
@@ -114,7 +143,7 @@ public class RobotHardwareOB
         rb.setPower(0);
         intake.setPower(0);
         conveyor.setPower(0);
-        tilt.setPosition(TILT_POSITION_INIT);
+        // tilt.setPosition(TILT_POSITION_INIT);
         indexer.setPosition(INDEXER_POSITION_LOAD);
         shooter1.setPower(0);
         wobble.setPower(0);
@@ -146,13 +175,20 @@ public class RobotHardwareOB
         imu1 = hwMap.get(BNO055IMU.class, "imu1");
         imu1.initialize(params);
 
-        led6 = hwMap.get(DigitalChannel.class, "led6");
-        led6.setMode(DigitalChannel.Mode.OUTPUT);
-        led6.setState(false);
 
-        led7 = hwMap.get(DigitalChannel.class, "led7");
-        led7.setMode(DigitalChannel.Mode.OUTPUT);
-        led7.setState(false);
+        ledr0 = hwMap.get(DigitalChannel.class, "led4");
+        ledr0.setMode(DigitalChannel.Mode.OUTPUT);
+        ledr0.setState(true);
+        ledr1 = hwMap.get(DigitalChannel.class, "led6");
+        ledr1.setMode(DigitalChannel.Mode.OUTPUT);
+        ledr1.setState(true);
+
+        ledg0 = hwMap.get(DigitalChannel.class, "led5");
+        ledg0.setMode(DigitalChannel.Mode.OUTPUT);
+        ledg0.setState(true);
+        ledg1 = hwMap.get(DigitalChannel.class, "led7");
+        ledg1.setMode(DigitalChannel.Mode.OUTPUT);
+        ledg1.setState(true);
 
     }
 
@@ -197,21 +233,41 @@ public class RobotHardwareOB
     }
 
     public void updateAll() {
+        // update pixy LED status
+        double v = getPixyV();
+        boolean red = true;      // default led4 (red) off
+        boolean grn = true;      // default led5 (green) off
+        if (v >= 0) {
+            if (Math.abs(v - pixyTargetV) <= pixyTargetR) grn = false;
+            else red = false;
+        }
+        if (ledr0.getState() != red) ledr0.setState(red);
+        if (ledr1.getState() != red) ledr1.setState(red);
+        if (ledg0.getState() != grn) ledg0.setState(grn);
+        if (ledg1.getState() != grn) ledg1.setState(grn);
+
         double indexerPos = INDEXER_POSITION_OFF;
         if (smode == ShootMode.TRIGGER) {   // "fire" button requested
             conveyorPower = CONVEYOR_POWER_FIRE;
             indexerPos = INDEXER_POSITION_LOAD;
             shooter(fireVelocity);
-            if (isShooterReady()) setShootMode(ShootMode.FIRE);
+            if (isFlyReady() || true) setShootMode(ShootMode.FIRE);
             if (smodeTimer.seconds() > 1.0)
                 setShootMode(ShootMode.LOAD);
         }
         if (smode == ShootMode.FIRE) {
             indexerPos = INDEXER_POSITION_FIRE;
             conveyorPower = CONVEYOR_POWER_FIRE;
-            if (smodeTimer.seconds() > 0.2) {
+            if (isRingLoaded()) setShootMode(ShootMode.RECOVER);
+            if (smodeTimer.seconds() > 0.5) {
                 setShootMode(ShootMode.LOAD);
             }
+        }
+        if (smode == ShootMode.RECOVER) {
+            indexerPos = INDEXER_POSITION_FIRE;
+            conveyorPower = CONVEYOR_POWER_FIRE;
+            if (!isRingLoaded()) setShootMode(ShootMode.LOAD);
+            if (smodeTimer.seconds() > 0.3) setShootMode(ShootMode.LOAD);
         }
         if (smode == ShootMode.LOAD) {
             indexerPos = INDEXER_POSITION_LOAD;
@@ -245,14 +301,14 @@ public class RobotHardwareOB
 
     public boolean isRingLoaded() {
         boolean s = ((DistanceSensor)colorv3).getDistance(DistanceUnit.CM) < 4;
-        if (s != led6.getState()) led6.setState(s);
+        // if (s != led6.getState()) led6.setState(s);
         return s;
     }
 
     public boolean isFlyReady() {
         double vel = shooter1.getVelocity();
         boolean s = (vel >= fireVelocity -40 && vel <= fireVelocity + 20);
-        if (s != led7.getState()) led7.setState(s);
+        // if (s != led7.getState()) led7.setState(s);
         return s;
     }
 
@@ -333,16 +389,53 @@ public class RobotHardwareOB
         driveYXW(ry, derror * 25, herror * 0.02);
     }
 
+    public void setArms(boolean down) {
+        larm.setPosition(down ? LARM_POSITION_DOWN : LARM_POSITION_UP);
+        rarm.setPosition(down ? RARM_POSITION_DOWN : RARM_POSITION_UP);
+    }
+
+    public void setPixyRed() {
+        pixyvolt = rpixyvolt;
+        pixytrig = rpixytrig;
+        pixyTargetBase = RPIXY_TARGET_VOLT;
+        pixyTargetV = pixyTargetBase;
+        pixyTargetR = RPIXY_TARGET_RANGE;
+        pixyTargetVOff = RPIXY_TARGET_OFFSET;
+    }
+
+    public void setPixyBlue() {
+        pixyvolt = bpixyvolt;
+        pixytrig = bpixytrig;
+        pixyTargetBase = BPIXY_TARGET_VOLT;
+        pixyTargetV = pixyTargetBase;
+        pixyTargetR = BPIXY_TARGET_RANGE;
+        pixyTargetVOff = BPIXY_TARGET_OFFSET;
+    }
+
+    public void setPixyTargetBase(double v) {
+        if (v >= 0) pixyTargetBase = v;
+    }
+    public void setPixyTargetV() {
+        setPixyTargetBase(getPixyV());
+    }
+
+
     public double getPixyV() {
-        if (pixy1.getVoltage() > 1.5) pixyV = pixy0.getVoltage();
+        pixyV = (pixytrig.getVoltage() > 1.5) ? pixyvolt.getVoltage() : -100;
         return pixyV;
     }
 
     // drive robot forward/strafe, maintain heading of pixy center
-    public void driveYXP(double ry, double rx, double pxv) {
-        double perror = 0;
-        if (pixy1.getVoltage() > 1.5) perror = pixy0.getVoltage() - pxv;
-        driveYXW(ry, rx, perror * 0.3);
+    public void driveYXP(double ry, double rx, int target) {
+        double v = getPixyV();
+        pixyTargetV = pixyTargetBase + pixyTargetVOff[target];
+        double perror = (v >= 0) ? v - pixyTargetV : 0;
+        double pgain = (ry != 0 || rx != 0) ? 1.2 : 0.4;
+        driveYXW(ry, rx, perror * pgain);
+    }
+
+    public void driveYXP(double ry, double rx) {
+        driveYXP(ry, rx, 0);
     }
 
 }
