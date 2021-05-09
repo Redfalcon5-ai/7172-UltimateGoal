@@ -323,6 +323,7 @@ public class CrowleyRedAuto extends LinearOpMode
         waitForStart();
 
         robot.shooter(1660);
+        robot.setArms(false);
 
         drive.followTrajectory(move1);
 
@@ -445,6 +446,8 @@ public class CrowleyRedAuto extends LinearOpMode
         }
 
         if (rings == 4){
+            robot.outtake();
+            robot.updateAll(1660);
             drive.followTrajectory(four1);
             robot.wgOpen();
             robot.updateAll(1660);

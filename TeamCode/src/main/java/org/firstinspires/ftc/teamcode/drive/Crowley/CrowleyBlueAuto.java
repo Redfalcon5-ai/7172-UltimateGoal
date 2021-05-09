@@ -203,7 +203,16 @@ public class CrowleyBlueAuto extends LinearOpMode
 
         //Four ring trajectories
         Trajectory four1 = drive.trajectoryBuilder(move1.end())
-                .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(36, 40, Math.toRadians(0)))
+                .lineToLinearHeading(
+                        new com.acmerobotics.roadrunner.geometry.Pose2d(36, 38, Math.toRadians(0)),
+                        new MinVelocityConstraint(
+                                Arrays.asList(
+                                        new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
+                                        new MecanumVelocityConstraint(40, DriveConstants.TRACK_WIDTH)
+                                )
+                        ),
+                        new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL)
+                )
                 .build();
 
         Trajectory four2 = drive.trajectoryBuilder(four1.end())
@@ -211,16 +220,16 @@ public class CrowleyBlueAuto extends LinearOpMode
                 .build();
 
         Trajectory four3 = drive.trajectoryBuilder(four2.end())
-                .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(-35, -65, Math.toRadians(0)))
+                .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(42, 36, Math.toRadians(0)))
                 .build();
 
         Trajectory four4 = drive.trajectoryBuilder(four3.end())
-                .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(-47, -35, Math.toRadians(0)))
+                .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(38, 45, Math.toRadians(0)))
                 .build();
 
         Trajectory four5 = drive.trajectoryBuilder(four4.end())
                 .lineToLinearHeading(
-                        new com.acmerobotics.roadrunner.geometry.Pose2d(-35, -40, Math.toRadians(5)),
+                        new com.acmerobotics.roadrunner.geometry.Pose2d(120, 65, Math.toRadians(5)),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -232,20 +241,11 @@ public class CrowleyBlueAuto extends LinearOpMode
                 .build();
 
         Trajectory four6 = drive.trajectoryBuilder(four5.end())
-                .lineToLinearHeading(
-                        new com.acmerobotics.roadrunner.geometry.Pose2d(-12, -38, Math.toRadians(5)),
-                        new MinVelocityConstraint(
-                                Arrays.asList(
-                                        new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
-                                        new MecanumVelocityConstraint(10, DriveConstants.TRACK_WIDTH)
-                                )
-                        ),
-                        new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL)
-                )
+                .back(20)
                 .build();
 
         Trajectory four7 = drive.trajectoryBuilder(four6.end())
-                .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(54, -47, Math.toRadians(160)))
+                .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(110, 65, Math.toRadians(180)))
                 .build();
 
         Trajectory four8 = drive.trajectoryBuilder(four7.end())
@@ -425,9 +425,9 @@ public class CrowleyBlueAuto extends LinearOpMode
             for(int i = 0; i < 3; i++){
                 robot.intake();
                 robot.updateAll(1600);
-                sleep(250);
+                sleep(450);
                 robot.updateAll(1600);
-                sleep(250);
+                sleep(450);
             }
 
             drive.followTrajectory(four2);
@@ -440,7 +440,6 @@ public class CrowleyBlueAuto extends LinearOpMode
             }
 
             robot.intake();
-            robot.updateAll(1600);
             robot.updateAll(1600);
             sleep(500);
 
@@ -455,9 +454,50 @@ public class CrowleyBlueAuto extends LinearOpMode
                 robot.updateAll(1600);
             }
 
+            robot.fire();
+            while(robot.smode != RobotHardwareOB.ShootMode.LOAD){
+                robot.updateAll(1600);
+            }
 
+            drive.followTrajectory(four3);
+            robot.intake();
+            robot.updateAll(1600);
+            sleep(1500);
+            drive.followTrajectory(four4);
 
+            robot.fire();
+            while(robot.smode != RobotHardwareOB.ShootMode.LOAD){
+                robot.updateAll(1600);
+            }
+
+            robot.fire();
+            while(robot.smode != RobotHardwareOB.ShootMode.LOAD){
+                robot.updateAll(1600);
+            }
+
+            robot.fire();
+            while(robot.smode != RobotHardwareOB.ShootMode.LOAD){
+                robot.updateAll(1600);
+            }
+
+            robot.quiet();
+            robot.updateAll();
+
+            drive.followTrajectory(four5);
+            robot.wgOpen();
+            robot.updateAll();
+            robot.wgFlip();
+            robot.updateAll();
+            drive.followTrajectory(four6);
             /*
+            robot.wgClose();
+            robot.updateAll();
+            drive.followTrajectory(four7);
+            robot.wgOpen();
+            robot.wgStow();
+            robot.updateAll();
+
+
 
             robot.wgOpen();
             robot.updateAll(1600);
@@ -470,7 +510,6 @@ public class CrowleyBlueAuto extends LinearOpMode
             robot.updateAll(1600);
             sleep(500);
             drive.followTrajectory(four4);
-            drive.followTrajectory(four5);
             robot.shooter(1600);
 
 

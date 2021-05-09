@@ -23,7 +23,7 @@ public class RobotHardwareOB
     public final double INTAKE_POWER_OFF = 0;
     public final double INTAKE_POWER_OUTTAKE = -1.0;
     public final double CONVEYOR_POWER_INTAKE = 0.90;
-    public final double CONVEYOR_POWER_FIRE = 0.90;
+    public final double CONVEYOR_POWER_FIRE = 1;
     public final double CONVEYOR_POWER_OUTTAKE = -0.75;
     public final double CONVEYOR_POWER_OFF = 0;
     public final double INDEXER_POSITION_OFF = 0.5;
