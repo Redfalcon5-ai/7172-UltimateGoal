@@ -22,14 +22,14 @@ public class RobotHardwareOB
     public final double INTAKE_POWER_INTAKE = 1;
     public final double INTAKE_POWER_OFF = 0;
     public final double INTAKE_POWER_OUTTAKE = -1.0;
-    public final double CONVEYOR_POWER_INTAKE = 0.90;
+    public final double CONVEYOR_POWER_INTAKE = 0.75;
     public final double CONVEYOR_POWER_FIRE = 1;
     public final double CONVEYOR_POWER_OUTTAKE = -0.75;
     public final double CONVEYOR_POWER_OFF = 0;
     public final double INDEXER_POSITION_OFF = 0.5;
     public final double INDEXER_POSITION_LOAD = 0.5;
     public final double INDEXER_POSITION_FIRE = 0;
-    public final double SHOOTER_VELOCITY_NORMAL = 1600;
+    public final double SHOOTER_VELOCITY_NORMAL = 1660;
     public final double SHOOTER_VELOCITY_LOW = 1500;
     public final double SHOOTER_VELOCITY_OFF = 0;
     public final double GRABBER_POSITION_CLOSE = 0.065;
@@ -43,11 +43,13 @@ public class RobotHardwareOB
     public final double BPIXY_TARGET_VOLT = 1.936;
     public final double BPIXY_TARGET_RANGE = 0.2;
     public final double BPIXY_TARGET_OFFSET[] = { 0, -0.40, -0.65, -0.9 };
+    public final double DROP_DOWN_POS = 0.4;
+    public final double DROP_UP_POS = 0.6;
 
-    public final double LARM_POSITION_UP = 0.4;
+    public final double LARM_POSITION_UP = 0.5;
     public final double LARM_POSITION_DOWN = 0.75;
-    public final double RARM_POSITION_UP = 0.6;
-    public final double RARM_POSITION_DOWN = 0.2;
+    public final double RARM_POSITION_UP = 0.5;
+    public final double RARM_POSITION_DOWN = 0.15;
 
     public enum ShootMode { IDLE, LOAD, TRIGGER, FIRE, RECOVER }
     public ShootMode smode = ShootMode.IDLE;
@@ -71,6 +73,7 @@ public class RobotHardwareOB
     public NormalizedColorSensor colorv3 = null;
     public DcMotorEx wobble = null;
     public Servo grabber = null;
+    public Servo drop = null;
 
     public Servo larm = null;
     public Servo rarm = null;
@@ -127,6 +130,7 @@ public class RobotHardwareOB
         colorv3 = hwMap.get(NormalizedColorSensor.class, "colorv3");
         wobble = (DcMotorEx)hwMap.get(DcMotor.class, "wobble");
         grabber = hwMap.get(Servo.class, "grabber");
+        drop = hwMap.get(Servo.class, "drop");
 
         lrange = hwMap.get(AnalogInput.class, "lrange");
         rpixyvolt = hwMap.get(AnalogInput.class, "rpixyvolt");
@@ -148,6 +152,7 @@ public class RobotHardwareOB
         shooter1.setPower(0);
         wobble.setPower(0);
         grabber.setPosition(GRABBER_POSITION_OPEN);
+        drop.setPosition(DROP_UP_POS);
 
         // Set all motors to run without encoders
         //Set mode for sensors
@@ -417,6 +422,14 @@ public class RobotHardwareOB
     }
     public void setPixyTargetV() {
         setPixyTargetBase(getPixyV());
+    }
+
+    public void dropDown(){
+        drop.setPosition(DROP_DOWN_POS);
+    }
+
+    public void dropUp(){
+        drop.setPosition(DROP_UP_POS);
     }
 
 
