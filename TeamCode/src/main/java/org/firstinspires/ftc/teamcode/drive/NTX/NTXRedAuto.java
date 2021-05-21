@@ -65,7 +65,7 @@ public class NTXRedAuto extends LinearOpMode
         //Universal trajectories
         Trajectory move1 = drive.trajectoryBuilder(startPose)
                 .splineTo(
-                        new Vector2d(-10, -16), Math.toRadians(0),
+                        new Vector2d(-6, -16), Math.toRadians(0),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -77,7 +77,7 @@ public class NTXRedAuto extends LinearOpMode
                 .build();
 
         Trajectory move2 = drive.trajectoryBuilder(move1.end())
-                .strafeTo(new Vector2d(-8, -27))
+                .strafeTo(new Vector2d(-6, -32))
                 .build();
 
         //Zero ring trajectories
@@ -96,7 +96,7 @@ public class NTXRedAuto extends LinearOpMode
 
         Trajectory zero2 = drive.trajectoryBuilder(zero1.end())
                 .lineToLinearHeading(
-                        new com.acmerobotics.roadrunner.geometry.Pose2d(-31, -65, Math.toRadians(0)),
+                        new com.acmerobotics.roadrunner.geometry.Pose2d(-28, -67, Math.toRadians(0)),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -109,7 +109,7 @@ public class NTXRedAuto extends LinearOpMode
 
         Trajectory zero3 = drive.trajectoryBuilder(zero2.end())
                 .lineToLinearHeading(
-                        new com.acmerobotics.roadrunner.geometry.Pose2d(8, -50, Math.toRadians(-210)),
+                        new com.acmerobotics.roadrunner.geometry.Pose2d(12    , -56, Math.toRadians(-210)),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -125,13 +125,13 @@ public class NTXRedAuto extends LinearOpMode
                 .build();
 
         Trajectory zero5 = drive.trajectoryBuilder(zero4.end())
-                .strafeRight(10)
+                .strafeRight(20)
                 .build();
 
         //One ring trajectories
         Trajectory one1 = drive.trajectoryBuilder(move2.end())
                 .lineToLinearHeading(
-                        new com.acmerobotics.roadrunner.geometry.Pose2d(22, -41, Math.toRadians(0)),
+                        new com.acmerobotics.roadrunner.geometry.Pose2d(22, -51, Math.toRadians(0)),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -196,7 +196,7 @@ public class NTXRedAuto extends LinearOpMode
 
         Trajectory one6 = drive.trajectoryBuilder(one5.end())
                 .lineToLinearHeading(
-                        new com.acmerobotics.roadrunner.geometry.Pose2d(31, -29, Math.toRadians(160)),
+                        new com.acmerobotics.roadrunner.geometry.Pose2d(43, -29, Math.toRadians(160)),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -218,12 +218,12 @@ public class NTXRedAuto extends LinearOpMode
                 .build();
 
         Trajectory four2 = drive.trajectoryBuilder(four1.end())
-                .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(10, -55, Math.toRadians(0)))
+                .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(10, -65, Math.toRadians(0)))
                 .build();
 
         Trajectory four3 = drive.trajectoryBuilder(four2.end())
                 .lineToLinearHeading(
-                        new com.acmerobotics.roadrunner.geometry.Pose2d(-32, -68, Math.toRadians(0)),
+                        new com.acmerobotics.roadrunner.geometry.Pose2d(-32, -72, Math.toRadians(0)),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -235,12 +235,12 @@ public class NTXRedAuto extends LinearOpMode
                 .build();
 
         Trajectory four4 = drive.trajectoryBuilder(four3.end())
-                .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(-45, -40, Math.toRadians(0)))
+                .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(-45, -48, Math.toRadians(0)))
                 .build();
 
         Trajectory four5 = drive.trajectoryBuilder(four4.end())
                 .lineToLinearHeading(
-                        new com.acmerobotics.roadrunner.geometry.Pose2d(-31, -44, Math.toRadians(2.5)),
+                        new com.acmerobotics.roadrunner.geometry.Pose2d(-31, -48, Math.toRadians(2.5)),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -253,7 +253,7 @@ public class NTXRedAuto extends LinearOpMode
 
         Trajectory four6 = drive.trajectoryBuilder(four5.end())
                 .lineToLinearHeading(
-                        new com.acmerobotics.roadrunner.geometry.Pose2d(-12, -38, Math.toRadians(2.5)),
+                        new com.acmerobotics.roadrunner.geometry.Pose2d(-12, -38, Math.toRadians(0)),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -265,7 +265,7 @@ public class NTXRedAuto extends LinearOpMode
                 .build();
 
         Trajectory four7 = drive.trajectoryBuilder(four6.end())
-                .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(62, -50, Math.toRadians(160)))
+                .lineToLinearHeading(new com.acmerobotics.roadrunner.geometry.Pose2d(62, -54, Math.toRadians(160)))
                 .build();
 
         Trajectory four8 = drive.trajectoryBuilder(four7.end())
@@ -394,6 +394,7 @@ public class NTXRedAuto extends LinearOpMode
             sleep(1000);
             drive.followTrajectory(zero5);
             robot.dropDown();
+
         }
 
 
@@ -440,7 +441,9 @@ public class NTXRedAuto extends LinearOpMode
             drive.followTrajectory(one7);
             robot.wgStow();
             robot.updateAll();
-            drive.turn(Math.toRadians(200));
+            drive.turn(Math.toRadians(195));
+            robot.dropDown();
+            sleep(1000);
         }
 
         if (rings == 4){

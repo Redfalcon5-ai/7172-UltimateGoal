@@ -45,6 +45,12 @@ public class RingDetectorSample extends LinearOpMode {
 
         telemetry.update();
 
+        while(!opModeIsActive() && !isStopRequested()){
+            telemetry.addData("Analysis", pipeline.getAnalysis());
+            telemetry.addData("Rings", pipeline.position);
+            telemetry.update();
+        }
+
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
 
