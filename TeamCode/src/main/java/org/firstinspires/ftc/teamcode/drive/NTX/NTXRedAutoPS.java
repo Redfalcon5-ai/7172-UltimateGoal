@@ -7,6 +7,7 @@ import com.acmerobotics.roadrunner.trajectory.constraints.MecanumVelocityConstra
 import com.acmerobotics.roadrunner.trajectory.constraints.MinVelocityConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.ProfileAccelerationConstraint;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -21,7 +22,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import java.util.Arrays;
 
-
+@Disabled
 @Autonomous(name="NTXRedAutoPS", group="NTXRedAuto")
 public class NTXRedAutoPS extends LinearOpMode
 {
@@ -49,7 +50,6 @@ public class NTXRedAutoPS extends LinearOpMode
         webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
                                          @Override
                                          public void onOpened() {
-
                                              webcam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
                                          }
                                      }
@@ -64,7 +64,7 @@ public class NTXRedAutoPS extends LinearOpMode
         //Universal trajectories
         Trajectory move1 = drive.trajectoryBuilder(startPose)
                 .splineTo(
-                        new Vector2d(-40, -32.5), Math.toRadians(20),
+                        new Vector2d(-40, -32.5), Math.toRadians(35),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -77,7 +77,7 @@ public class NTXRedAutoPS extends LinearOpMode
 
         Trajectory move2 = drive.trajectoryBuilder(move1.end())
                 .splineTo(
-                        new Vector2d(-40, -32), Math.toRadians(15),
+                        new Vector2d(-40, -32), Math.toRadians(28),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -90,7 +90,7 @@ public class NTXRedAutoPS extends LinearOpMode
 
         Trajectory move3 = drive.trajectoryBuilder(move2.end())
                 .splineTo(
-                        new Vector2d(-40, -31.5), Math.toRadians(12),
+                        new Vector2d(-40, -31.5), Math.toRadians(20),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),

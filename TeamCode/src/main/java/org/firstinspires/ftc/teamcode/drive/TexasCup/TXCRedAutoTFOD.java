@@ -7,6 +7,7 @@ import com.acmerobotics.roadrunner.trajectory.constraints.MecanumVelocityConstra
 import com.acmerobotics.roadrunner.trajectory.constraints.MinVelocityConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.ProfileAccelerationConstraint;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -21,8 +22,8 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import java.util.Arrays;
 
-
-@Autonomous(name="TXCRedAuto", group="TXCRedAuto")
+@Disabled
+@Autonomous(name="TXCRedAutoTFOD", group="TXCRedAuto")
 public class TXCRedAutoTFOD extends LinearOpMode
 {
     //Create elapsed time and robot hardware objects
@@ -82,7 +83,7 @@ public class TXCRedAutoTFOD extends LinearOpMode
         //Zero ring trajectories
         Trajectory zero1 = drive.trajectoryBuilder(move2.end())
                 .lineToLinearHeading(
-                        new com.acmerobotics.roadrunner.geometry.Pose2d(3, -60, Math.toRadians(-50)),
+                        new com.acmerobotics.roadrunner.geometry.Pose2d(25, -60, Math.toRadians(-50)),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -99,7 +100,7 @@ public class TXCRedAutoTFOD extends LinearOpMode
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
-                                        new MecanumVelocityConstraint(30, DriveConstants.TRACK_WIDTH)
+                                        new MecanumVelocityConstraint(40, DriveConstants.TRACK_WIDTH)
                                 )
                         ),
                         new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL)
@@ -316,6 +317,8 @@ public class TXCRedAutoTFOD extends LinearOpMode
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
+
+        sleep(5000);
 
         robot.setFireVelocity(1580);
         robot.shooter(1580);

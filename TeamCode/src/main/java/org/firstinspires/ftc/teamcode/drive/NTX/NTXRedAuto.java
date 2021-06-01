@@ -22,7 +22,6 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import java.util.Arrays;
 
-
 @Autonomous(name="NTXRedAuto", group="NTXRedAuto")
 public class NTXRedAuto extends LinearOpMode
 {
