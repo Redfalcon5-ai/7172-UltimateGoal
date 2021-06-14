@@ -353,8 +353,6 @@ public class NTXRedAutoPS extends LinearOpMode
         waitForStart();
 
         robot.setFireVelocity(1700);
-
-        robot.dropDown();
         robot.shooter(1700);
         robot.setArms(false);
 

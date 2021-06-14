@@ -392,7 +392,6 @@ public class NTXRedAuto extends LinearOpMode
             robot.updateAll();
             sleep(1000);
             drive.followTrajectory(zero5);
-            robot.dropDown();
 
         }
 
@@ -405,7 +404,6 @@ public class NTXRedAuto extends LinearOpMode
             sleep(500);
             robot.wgFlip();
             robot.updateAll();
-            robot.dropDown();
             drive.followTrajectory(one2);
             robot.intake();
             robot.updateAll();
@@ -441,7 +439,6 @@ public class NTXRedAuto extends LinearOpMode
             robot.wgStow();
             robot.updateAll();
             drive.turn(Math.toRadians(195));
-            robot.dropDown();
             sleep(1000);
         }
 
@@ -454,7 +451,6 @@ public class NTXRedAuto extends LinearOpMode
             robot.updateAll();
             robot.wgFlip();
             robot.updateAll();
-            robot.dropDown();
             drive.followTrajectory(four2);
             drive.followTrajectory(four3);
             robot.wgClose();

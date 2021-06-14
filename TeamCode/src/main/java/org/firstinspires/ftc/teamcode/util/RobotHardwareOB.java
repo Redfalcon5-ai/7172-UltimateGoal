@@ -1,6 +1,11 @@
 package org.firstinspires.ftc.teamcode.util;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import com.qualcomm.robotcore.util.RobotLog;
+import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
@@ -22,29 +27,56 @@ public class RobotHardwareOB
     public final double INTAKE_POWER_INTAKE = 1;
     public final double INTAKE_POWER_OFF = 0;
     public final double INTAKE_POWER_OUTTAKE = -1.0;
-    public final double CONVEYOR_POWER_INTAKE = 0.75;
-    public final double CONVEYOR_POWER_FIRE = 1;
+    public final double CONVEYOR_POWER_INTAKE = 0.80;
+    public final double CONVEYOR_POWER_FIRE = 0.90;
     public final double CONVEYOR_POWER_OUTTAKE = -0.75;
     public final double CONVEYOR_POWER_OFF = 0;
     public final double INDEXER_POSITION_OFF = 0.5;
     public final double INDEXER_POSITION_LOAD = 0.5;
-    public final double INDEXER_POSITION_FIRE = 0;
-    public final double SHOOTER_VELOCITY_NORMAL = 1660;
-    public final double SHOOTER_VELOCITY_LOW = 1500;
+    public final double INDEXER_POSITION_FIRE = 0.0;
+    public final double SHOOTER_VELOCITY_HIGH = 1540;
+    public final double SHOOTER_VELOCITY_MID = 1360;
+    public final double SHOOTER_VELOCITY_PSHOT = 1380;
     public final double SHOOTER_VELOCITY_OFF = 0;
-    public final double GRABBER_POSITION_CLOSE = 0.065;
+    public final double SHOOTER_VELOCITY_NORMAL = 1520;     // deprecated
+    public final double SHOOTER_VELOCITY_LOW = 1360;        // deprecated
+    public final double GRABBER_POSITION_CLOSE = 0.025;
     public final double GRABBER_POSITION_OPEN = 0.85;
     public final double WOBBLE_VELOCITY_STOW = -700;
     public final double WOBBLE_VELOCITY_FLIP = 700;
     public final double TILT_POSITION_INIT = 0.66;
-    public final double RPIXY_TARGET_VOLT = 1.95;
-    public final double RPIXY_TARGET_RANGE = 0.2;
-    public final double RPIXY_TARGET_OFFSET[] = { 0, 0.40, 0.65, 0.9 };
-    public final double BPIXY_TARGET_VOLT = 1.936;
-    public final double BPIXY_TARGET_RANGE = 0.2;
-    public final double BPIXY_TARGET_OFFSET[] = { 0, -0.40, -0.65, -0.9 };
+    public final double TURRET_POSITION_MIN = 0.36;
+    public final double TURRET_POSITION_MAX = 0.70;
+    public final double TURRET_POSITION_STRAIGHT = 0.56;
+    public final double CHASSIS_RPIXY_TOWER = 1.946;    // rpixy value when aimed at red tower goal
+    public final double CHASSIS_BPIXY_TOWER = 1.764;    // bpixy value when aimed at blue tower goal
+    public final double CHASSIS_PSHOT_NEAR = 0.345;     // offset for pshot next to tower goal
+    public final double CHASSIS_PSHOT_MID = 0.533;      // offset for pshot mid tower goal
+    public final double CHASSIS_PSHOT_FAR = 0.720;      // offset for pshot away from tower goal
     public final double DROP_DOWN_POS = 0.4;
     public final double DROP_UP_POS = 0.6;
+
+    public final double TARGETS[][] = {
+            // red targets (flyvelocity, pixy_a, pixy_b, turret_a, turret_b, pixy_c)
+            { SHOOTER_VELOCITY_HIGH, 0.99, 2.528, 0.36, 0.70, CHASSIS_RPIXY_TOWER },  // 0: red high goal
+            { SHOOTER_VELOCITY_MID, 0.99, 2.528, 0.36, 0.70, CHASSIS_RPIXY_TOWER },  // 1: red mid goal
+            { SHOOTER_VELOCITY_PSHOT, 2.213, 2.919, 0.46, 0.60, CHASSIS_RPIXY_TOWER + CHASSIS_PSHOT_FAR },  // 2: red left powershot
+            { SHOOTER_VELOCITY_PSHOT + 20, 2.024, 2.744, 0.46, 0.60, CHASSIS_RPIXY_TOWER + CHASSIS_PSHOT_MID },  // 3: red center powershot
+            { SHOOTER_VELOCITY_PSHOT, 1.856, 2.534, 0.46, 0.60, CHASSIS_RPIXY_TOWER + CHASSIS_PSHOT_NEAR },  // 4: red right powershot
+            { SHOOTER_VELOCITY_HIGH, 0, 3.3, TURRET_POSITION_STRAIGHT, TURRET_POSITION_STRAIGHT, CHASSIS_RPIXY_TOWER },
+            { SHOOTER_VELOCITY_HIGH, 0, 3.3, TURRET_POSITION_MIN+0.0, TURRET_POSITION_MIN+0.0, 1.65 },
+            { SHOOTER_VELOCITY_HIGH, 0, 3.3, TURRET_POSITION_MAX-0.0, TURRET_POSITION_MAX-0.0, 1.65 },
+
+            // blue targets (flyvelocity, pixy_a, pixy_b, turret_a, turret_b, pixy_c)
+            { SHOOTER_VELOCITY_HIGH, 0.755, 2.34, 0.36, 0.70, CHASSIS_BPIXY_TOWER },  // 8: blue high goal
+            { SHOOTER_VELOCITY_MID, 0.755, 2.34, 0.36, 0.70, CHASSIS_BPIXY_TOWER },  // 9: blue mid goal
+            { SHOOTER_VELOCITY_PSHOT, 0.906, 1.533, 0.46, 0.60, CHASSIS_BPIXY_TOWER - CHASSIS_PSHOT_NEAR },  // 10: blue left powershot
+            { SHOOTER_VELOCITY_PSHOT, 0.704, 1.372, 0.46, 0.60, CHASSIS_BPIXY_TOWER - CHASSIS_PSHOT_MID },  // 11: blue center powershot
+            { SHOOTER_VELOCITY_PSHOT, 0.501, 1.210, 0.46, 0.60, CHASSIS_BPIXY_TOWER - CHASSIS_PSHOT_FAR },  // 12: blue right powershot
+            { SHOOTER_VELOCITY_HIGH, 0, 3.3, TURRET_POSITION_STRAIGHT, TURRET_POSITION_STRAIGHT, CHASSIS_BPIXY_TOWER },
+            { SHOOTER_VELOCITY_HIGH, 0, 3.3, TURRET_POSITION_MIN+0.0, TURRET_POSITION_MIN+0.0, 1.65 },
+            { SHOOTER_VELOCITY_HIGH, 0, 3.3, TURRET_POSITION_MAX-0.0, TURRET_POSITION_MAX-0.0, 1.65 },
+    };
 
     public final double LARM_POSITION_UP = 0.5;
     public final double LARM_POSITION_DOWN = 0.75;
@@ -54,6 +86,8 @@ public class RobotHardwareOB
     public enum ShootMode { IDLE, LOAD, TRIGGER, FIRE, RECOVER }
     public ShootMode smode = ShootMode.IDLE;
     public ElapsedTime smodeTimer = new ElapsedTime();
+    public ElapsedTime robotTimer = new ElapsedTime();
+    public int shots = 0;
 
     public static enum WGMode { IDLE, STOW, FLIP }
     public WGMode wgmode = WGMode.IDLE;
@@ -73,7 +107,6 @@ public class RobotHardwareOB
     public NormalizedColorSensor colorv3 = null;
     public DcMotorEx wobble = null;
     public Servo grabber = null;
-    public Servo drop = null;
 
     public Servo larm = null;
     public Servo rarm = null;
@@ -89,25 +122,32 @@ public class RobotHardwareOB
     public AnalogInput lrange = null;
     public double lrangeV = 0;
 
-    public AnalogInput rpixyvolt = null;
-    public AnalogInput rpixytrig = null;
-    public AnalogInput bpixyvolt = null;
-    public AnalogInput bpixytrig = null;
-    public AnalogInput pixyvolt = null;
-    public AnalogInput pixytrig = null;
-    public double pixyV = 0;
-    public double pixyTargetBase = RPIXY_TARGET_VOLT;
-    public double pixyTargetV = RPIXY_TARGET_VOLT;
-    public double pixyTargetR = RPIXY_TARGET_RANGE;
-    public double[] pixyTargetVOff = RPIXY_TARGET_OFFSET;
+    public Pixy2 rpixy = null;
+    public Pixy2 bpixy = null;
+    public Pixy2 activePixy = null;
+    public PIDF pixyPID = null;
+    public double pixyTargetV = 0;
+    public double drivelastrx = 0;
 
     //Create Hardware Map Object
     HardwareMap hwMap = null;
+    public Telemetry telemetry = null;
 
     public double intakePower = 0.0;
     public double conveyorPower = 0.0;
-    public double fireVelocity = SHOOTER_VELOCITY_NORMAL;
+    public double fireVelocity = SHOOTER_VELOCITY_HIGH;
+    public double shooterAdjust = 0;
     public ElapsedTime intakeTimer = new ElapsedTime();
+
+    public Servo turret = null;
+    public double turretPosition = TURRET_POSITION_STRAIGHT;
+    public double turretBase = TURRET_POSITION_STRAIGHT;
+    public double turretVolt = 0;
+    public double turretMult = 0;
+    public double turretAdjust = 0.0;
+    public int shootTarget = 0;
+    public Servo drop = null;
+
 
     //Initialize Hardware That
     //Comes from the Config
@@ -130,14 +170,19 @@ public class RobotHardwareOB
         colorv3 = hwMap.get(NormalizedColorSensor.class, "colorv3");
         wobble = (DcMotorEx)hwMap.get(DcMotor.class, "wobble");
         grabber = hwMap.get(Servo.class, "grabber");
+        turret = hwMap.get(Servo.class, "turret");
+        turret.setDirection(Servo.Direction.REVERSE);
         drop = hwMap.get(Servo.class, "drop");
 
+
         lrange = hwMap.get(AnalogInput.class, "lrange");
-        rpixyvolt = hwMap.get(AnalogInput.class, "rpixyvolt");
-        rpixytrig = hwMap.get(AnalogInput.class, "rpixytrig");
-        bpixyvolt = hwMap.get(AnalogInput.class, "bpixyvolt");
-        bpixytrig = hwMap.get(AnalogInput.class, "bpixytrig");
-        setPixyBlue();
+        rpixy = new Pixy2();
+        rpixy.initialize(hwMap, "rpixytrig", "rpixyvolt");
+        bpixy = new Pixy2();
+        bpixy.initialize(hwMap, "bpixytrig", "bpixyvolt");
+        pixyPID = new PIDF();
+        pixyPID.setPIDF(0.4, 0.06, 0.6, 0);
+        setTarget(0, 0);
 
         // Set all motors to zero power
         //Set servos to starting position
@@ -152,10 +197,8 @@ public class RobotHardwareOB
         shooter1.setPower(0);
         wobble.setPower(0);
         grabber.setPosition(GRABBER_POSITION_OPEN);
-        drop.setPosition(DROP_UP_POS);
 
         // Set all motors to run without encoders
-        //Set mode for sensors
         lf.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rf.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         lb.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -171,7 +214,27 @@ public class RobotHardwareOB
         shooter1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter1.setVelocityPIDFCoefficients(150, 0, 0, 13);
         wobble.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        dropUp();
 
+        initIMU(hwMap);   // must come after drive motors initialized
+
+        ledr0 = hwMap.get(DigitalChannel.class, "led4");
+        ledr0.setMode(DigitalChannel.Mode.OUTPUT);
+        ledr0.setState(true);
+        ledg0 = hwMap.get(DigitalChannel.class, "led5");
+        ledg0.setMode(DigitalChannel.Mode.OUTPUT);
+        ledg0.setState(true);
+
+        ledr1 = hwMap.get(DigitalChannel.class, "led6");
+        ledr1.setMode(DigitalChannel.Mode.OUTPUT);
+        ledr1.setState(true);
+        ledg1 = hwMap.get(DigitalChannel.class, "led7");
+        ledg1.setMode(DigitalChannel.Mode.OUTPUT);
+        ledg1.setState(true);
+    }
+
+    public void initIMU(HardwareMap hwMap) {
+        driveYXW(0,0,0);
         BNO055IMU.Parameters params = new BNO055IMU.Parameters();
         params.angleUnit = BNO055IMU.AngleUnit.DEGREES;
         params.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
@@ -179,22 +242,6 @@ public class RobotHardwareOB
         imu.initialize(params);
         imu1 = hwMap.get(BNO055IMU.class, "imu1");
         imu1.initialize(params);
-
-
-        ledr0 = hwMap.get(DigitalChannel.class, "led4");
-        ledr0.setMode(DigitalChannel.Mode.OUTPUT);
-        ledr0.setState(true);
-        ledr1 = hwMap.get(DigitalChannel.class, "led6");
-        ledr1.setMode(DigitalChannel.Mode.OUTPUT);
-        ledr1.setState(true);
-
-        ledg0 = hwMap.get(DigitalChannel.class, "led5");
-        ledg0.setMode(DigitalChannel.Mode.OUTPUT);
-        ledg0.setState(true);
-        ledg1 = hwMap.get(DigitalChannel.class, "led7");
-        ledg1.setMode(DigitalChannel.Mode.OUTPUT);
-        ledg1.setState(true);
-
     }
 
     public void intake() {
@@ -210,16 +257,24 @@ public class RobotHardwareOB
         conveyorPower = CONVEYOR_POWER_OUTTAKE;
     }
 
-    public void shooter(double v) {
-        shooter1.setVelocity(v);
-    }
-
     public void setFireVelocity(double v) {
         fireVelocity = v;
     }
 
+    public void adjustShooter(double t) {
+        shooterAdjust += t;
+        if (t == 0) shooterAdjust = 0;
+    }
+
+    public void shooter(double v) {
+        v += shooterAdjust;
+        if (v < 400) v = 0;
+        shooter1.setVelocity(v);
+    }
+
     public void fire() {
-        setShootMode(ShootMode.TRIGGER);
+        if (smode != ShootMode.FIRE && smode != ShootMode.RECOVER)
+            setShootMode(ShootMode.TRIGGER);
     }
 
     public void quiet() {
@@ -232,32 +287,24 @@ public class RobotHardwareOB
 
     public void setShootMode(ShootMode s) {
         if (smode != s) {
+            if (telemetry != null)
+                telemetry.log().add("%9.3f ShootMode %s", robotTimer.seconds(), s.toString());
             smode = s;
             smodeTimer.reset();
         }
     }
 
     public void updateAll() {
-        // update pixy LED status
-        double v = getPixyV();
-        boolean red = true;      // default led4 (red) off
-        boolean grn = true;      // default led5 (green) off
-        if (v >= 0) {
-            if (Math.abs(v - pixyTargetV) <= pixyTargetR) grn = false;
-            else red = false;
-        }
-        if (ledr0.getState() != red) ledr0.setState(red);
-        if (ledr1.getState() != red) ledr1.setState(red);
-        if (ledg0.getState() != grn) ledg0.setState(grn);
-        if (ledg1.getState() != grn) ledg1.setState(grn);
+
+        updateTurret();
 
         double indexerPos = INDEXER_POSITION_OFF;
         if (smode == ShootMode.TRIGGER) {   // "fire" button requested
             conveyorPower = CONVEYOR_POWER_FIRE;
             indexerPos = INDEXER_POSITION_LOAD;
             shooter(fireVelocity);
-            if (isFlyReady() || true) setShootMode(ShootMode.FIRE);
-            if (smodeTimer.seconds() > 1.0)
+            if (isFlyReady()) { setShootMode(ShootMode.FIRE); }
+            else if (smodeTimer.seconds() > 1.0)
                 setShootMode(ShootMode.LOAD);
         }
         if (smode == ShootMode.FIRE) {
@@ -265,14 +312,14 @@ public class RobotHardwareOB
             conveyorPower = CONVEYOR_POWER_FIRE;
             if (isRingLoaded()) setShootMode(ShootMode.RECOVER);
             if (smodeTimer.seconds() > 0.5) {
-                setShootMode(ShootMode.LOAD);
+                shots++; setShootMode(ShootMode.LOAD);
             }
         }
         if (smode == ShootMode.RECOVER) {
             indexerPos = INDEXER_POSITION_FIRE;
             conveyorPower = CONVEYOR_POWER_FIRE;
-            if (!isRingLoaded()) setShootMode(ShootMode.LOAD);
-            if (smodeTimer.seconds() > 0.3) setShootMode(ShootMode.LOAD);
+            if (!isRingLoaded()) { shots++; setShootMode(ShootMode.LOAD); }
+            else if (smodeTimer.seconds() > 0.2) { shots++; setShootMode(ShootMode.LOAD); }
         }
         if (smode == ShootMode.LOAD) {
             indexerPos = INDEXER_POSITION_LOAD;
@@ -311,9 +358,8 @@ public class RobotHardwareOB
     }
 
     public boolean isFlyReady() {
-        double vel = shooter1.getVelocity();
-        boolean s = (vel >= fireVelocity -40 && vel <= fireVelocity + 20);
-        // if (s != led7.getState()) led7.setState(s);
+        double vel = shooter1.getVelocity() - shooterAdjust;
+        boolean s = (vel >= fireVelocity -20 && vel <= fireVelocity + 20);
         return s;
     }
 
@@ -399,29 +445,72 @@ public class RobotHardwareOB
         rarm.setPosition(down ? RARM_POSITION_DOWN : RARM_POSITION_UP);
     }
 
-    public void setPixyRed() {
-        pixyvolt = rpixyvolt;
-        pixytrig = rpixytrig;
-        pixyTargetBase = RPIXY_TARGET_VOLT;
-        pixyTargetV = pixyTargetBase;
-        pixyTargetR = RPIXY_TARGET_RANGE;
-        pixyTargetVOff = RPIXY_TARGET_OFFSET;
+
+    public void setTarget(int pixy, int t) {
+        double targetrow[] = TARGETS[t];
+        shootTarget = t;
+        if (pixy > 0) {
+            activePixy = bpixy;
+            shootTarget = t + 8;
+            targetrow = TARGETS[shootTarget];
+        }
+        else if (pixy < 0) activePixy = null;
+        else activePixy = rpixy;
+        setFireVelocity(targetrow[0]);
+        turretVolt = targetrow[1];
+        turretBase = targetrow[3];
+        turretMult = (targetrow[4]-targetrow[3])/(targetrow[2]-targetrow[1]);
+        pixyTargetV = targetrow[5];
     }
 
-    public void setPixyBlue() {
-        pixyvolt = bpixyvolt;
-        pixytrig = bpixytrig;
-        pixyTargetBase = BPIXY_TARGET_VOLT;
-        pixyTargetV = pixyTargetBase;
-        pixyTargetR = BPIXY_TARGET_RANGE;
-        pixyTargetVOff = BPIXY_TARGET_OFFSET;
+    public void setTurretPosition(double t) {
+        turretPosition = Range.clip(t, TURRET_POSITION_MIN, TURRET_POSITION_MAX);
     }
 
-    public void setPixyTargetBase(double v) {
-        if (v >= 0) pixyTargetBase = v;
+    public void adjustTurret(double t) {
+        turretAdjust += t;
+        if (t == 0) turretAdjust = 0;
     }
-    public void setPixyTargetV() {
-        setPixyTargetBase(getPixyV());
+
+    public void updateTurret() {
+        if (activePixy != null) {
+            double v = activePixy.getValue();
+            if (v >= 0)
+                turretPosition = turretBase + (v - turretVolt) * turretMult + turretAdjust;
+        }
+        turretPosition = Range.clip(turretPosition, TURRET_POSITION_MIN, TURRET_POSITION_MAX);
+        turret.setPosition(turretPosition);
+    }
+
+    // drive robot forward/strafe, maintain heading of pixy center
+    public void driveYXP(double ry, double rx) {
+        double turn = 0;
+        if (drivelastrx > 0 && rx < 0.01) pixyPID.zeroI();
+        drivelastrx = rx;
+        double v = -100;
+        if (activePixy != null) v = activePixy.getValue();
+        if (v >= 0) turn = pixyPID.calc(v, pixyTargetV);
+        driveYXW(ry, rx, turn);
+    }
+
+
+    public void allPowerShot(LinearOpMode op, int pixysel) {
+        ElapsedTime powerTimer = new ElapsedTime();
+        driveYXW(0,0,0);
+        setTarget(pixysel, 2);
+        powerTimer.reset();
+        while (op.opModeIsActive() && powerTimer.seconds() < 0.5) updateAll();
+        fire();
+        while (op.opModeIsActive() && smode != ShootMode.LOAD) updateAll();
+        setTarget(pixysel, 3);
+        powerTimer.reset();
+        while (op.opModeIsActive() && powerTimer.seconds() < 0.5) updateAll();
+        fire();
+        while (op.opModeIsActive() && smode != ShootMode.LOAD) updateAll();
+        setTarget(pixysel, 4);
+        powerTimer.reset();
+        while (op.opModeIsActive() && powerTimer.seconds() < 0.5) updateAll();
+        fire();
     }
 
     public void dropDown(){
@@ -430,25 +519,6 @@ public class RobotHardwareOB
 
     public void dropUp(){
         drop.setPosition(DROP_UP_POS);
-    }
-
-
-    public double getPixyV() {
-        pixyV = (pixytrig.getVoltage() > 1.5) ? pixyvolt.getVoltage() : -100;
-        return pixyV;
-    }
-
-    // drive robot forward/strafe, maintain heading of pixy center
-    public void driveYXP(double ry, double rx, int target) {
-        double v = getPixyV();
-        pixyTargetV = pixyTargetBase + pixyTargetVOff[target];
-        double perror = (v >= 0) ? v - pixyTargetV : 0;
-        double pgain = (ry != 0 || rx != 0) ? 1.2 : 0.4;
-        driveYXW(ry, rx, perror * pgain);
-    }
-
-    public void driveYXP(double ry, double rx) {
-        driveYXP(ry, rx, 0);
     }
 
 }

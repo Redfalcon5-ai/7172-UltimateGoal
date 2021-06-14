@@ -16,7 +16,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
 
 @TeleOp
-public class RingDeterminationPipeline extends LinearOpMode
+public class RingDeterminationPipeline2 extends LinearOpMode
 {
     public OpenCvCamera webcam;
     public SkystoneDeterminationPipeline pipeline;
@@ -64,13 +64,13 @@ public class RingDeterminationPipeline extends LinearOpMode
         static final Scalar BLUE = new Scalar(0, 0, 255);
         static final Scalar GREEN = new Scalar(0, 255, 0);
 
-        static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(150, 85);
+        static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(0, 13);
 
-        static final int REGION_WIDTH = 35;
-        static final int REGION_HEIGHT = 45;
+        static final int REGION_WIDTH = 320;
+        static final int REGION_HEIGHT = 100;
 
-        final int FOUR_RING_THRESHOLD = 146 ;
-        final int ONE_RING_THRESHOLD = 133;
+        final int FOUR_RING_THRESHOLD = 142 ;
+        final int ONE_RING_THRESHOLD = 132;
 
         Point region1_pointA = new Point(
                 REGION1_TOPLEFT_ANCHOR_POINT.x,
