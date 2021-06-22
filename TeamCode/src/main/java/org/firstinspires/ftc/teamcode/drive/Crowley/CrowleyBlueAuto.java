@@ -7,6 +7,7 @@ import com.acmerobotics.roadrunner.trajectory.constraints.MecanumVelocityConstra
 import com.acmerobotics.roadrunner.trajectory.constraints.MinVelocityConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.ProfileAccelerationConstraint;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -21,7 +22,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import java.util.Arrays;
 
-
+@Disabled
 @Autonomous(name="CrowleyBlueAuto", group="CrowleyRedAuto")
 public class CrowleyBlueAuto extends LinearOpMode
 {

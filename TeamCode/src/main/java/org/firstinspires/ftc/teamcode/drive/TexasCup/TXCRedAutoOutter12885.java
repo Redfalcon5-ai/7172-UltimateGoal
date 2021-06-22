@@ -24,8 +24,8 @@ import java.util.Arrays;
 import static org.firstinspires.ftc.teamcode.util.RobotHardwareOB.ShootMode.LOAD;
 
 @Disabled
-@Autonomous(name="TXCRedAutoInner", group="TXCRedAuto")
-public class TXCRedAutoInner extends LinearOpMode
+@Autonomous(name="TXCRedAutoOutter12885", group="TXCRedAuto")
+public class TXCRedAutoOutter12885 extends LinearOpMode
 {
     //Create elapsed time and robot hardware objects
     RobotHardwareOB robot   = new RobotHardwareOB();
@@ -60,14 +60,13 @@ public class TXCRedAutoInner extends LinearOpMode
 
         //Set RR start Pose
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        com.acmerobotics.roadrunner.geometry.Pose2d startPose = new com.acmerobotics.roadrunner.geometry.Pose2d(-61.5, -17.5, Math.toRadians(0));
+        com.acmerobotics.roadrunner.geometry.Pose2d startPose = new com.acmerobotics.roadrunner.geometry.Pose2d(-61.5, -56.5, Math.toRadians(0));
         drive.setPoseEstimate(startPose);
 
         int rings = 0;
         boolean ringsSet = false;
 
         int choiceO = 0;
-        int choiceP = 0;
 
         while(!opModeIsActive() && !isStopRequested()){
             if(gamepad1.x){
@@ -120,7 +119,7 @@ public class TXCRedAutoInner extends LinearOpMode
         //Universal trajectories
         Trajectory move1 = drive.trajectoryBuilder(startPose)
                 .lineToLinearHeading(
-                        new com.acmerobotics.roadrunner.geometry.Pose2d(-7, -17.5, Math.toRadians(0
+                        new com.acmerobotics.roadrunner.geometry.Pose2d(-7, -56.5, Math.toRadians(0
                         )),
                         new MinVelocityConstraint(
                                 Arrays.asList(
@@ -177,7 +176,7 @@ public class TXCRedAutoInner extends LinearOpMode
         //Zero ring trajectories
         Trajectory zero1 = drive.trajectoryBuilder(move2.end())
                 .lineToLinearHeading(
-                        new com.acmerobotics.roadrunner.geometry.Pose2d(7, -65, Math.toRadians(0)),
+                        new com.acmerobotics.roadrunner.geometry.Pose2d(2, -65, Math.toRadians(0)),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -191,7 +190,7 @@ public class TXCRedAutoInner extends LinearOpMode
         //One ring trajectories
         Trajectory one1 = drive.trajectoryBuilder(move2.end())
                 .lineToLinearHeading(
-                        new com.acmerobotics.roadrunner.geometry.Pose2d(26, -30, Math.toRadians(0)),
+                        new com.acmerobotics.roadrunner.geometry.Pose2d(22, -25, Math.toRadians(0)),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -253,6 +252,13 @@ public class TXCRedAutoInner extends LinearOpMode
         telemetry.update();
         sleep(250);
 
+        robot.fire();
+        while(robot.smode != LOAD){
+            robot.updateAll();
+        }
+        telemetry.update();
+        sleep(250);
+
         if(choiceO == 0 || choiceO == 1) {
 
             if (rings == 0) {
@@ -279,14 +285,24 @@ public class TXCRedAutoInner extends LinearOpMode
                 startPose = four1.end();
             }
 
-            robot.wgFlip();
-            robot.updateAll();
+            if(rings != 0){
 
-            if(rings != 0) {
+                Trajectory move0_01 = drive.trajectoryBuilder(startPose)
+                        .lineToLinearHeading(
+                                new com.acmerobotics.roadrunner.geometry.Pose2d(-20, -55, Math.toRadians(0)),
+                                new MinVelocityConstraint(
+                                        Arrays.asList(
+                                                new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
+                                                new MecanumVelocityConstraint(40, DriveConstants.TRACK_WIDTH)
+                                        )
+                                ),
+                                new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL)
+                        )
+                        .build();
 
                 Trajectory move1_01 = drive.trajectoryBuilder(startPose)
                         .lineToLinearHeading(
-                                new com.acmerobotics.roadrunner.geometry.Pose2d(-39, -5, Math.toRadians(0)),
+                                new com.acmerobotics.roadrunner.geometry.Pose2d(-43, -55, Math.toRadians(0)),
                                 new MinVelocityConstraint(
                                         Arrays.asList(
                                                 new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -299,7 +315,7 @@ public class TXCRedAutoInner extends LinearOpMode
 
                 Trajectory move2_01 = drive.trajectoryBuilder(move1_01.end())
                         .lineToLinearHeading(
-                                new com.acmerobotics.roadrunner.geometry.Pose2d(-39, -34, Math.toRadians(0)),
+                                new com.acmerobotics.roadrunner.geometry.Pose2d(-43, -33, Math.toRadians(0)),
                                 new MinVelocityConstraint(
                                         Arrays.asList(
                                                 new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -312,12 +328,12 @@ public class TXCRedAutoInner extends LinearOpMode
 
                 Trajectory move3_01 = drive.trajectoryBuilder(move2_01.end())
                         .lineToLinearHeading(
-                                new com.acmerobotics.roadrunner.geometry.Pose2d(-30, -35, Math.toRadians(0)))
+                                new com.acmerobotics.roadrunner.geometry.Pose2d(-30, -33, Math.toRadians(0)))
                         .build();
 
                 drive.followTrajectory(move1_01);
-                drive.followTrajectory(move2_01);
                 robot.dropDown();
+                drive.followTrajectory(move2_01);
                 drive.followTrajectory(move3_01);
 
                 robot.intake();
@@ -348,7 +364,7 @@ public class TXCRedAutoInner extends LinearOpMode
                                 new MinVelocityConstraint(
                                         Arrays.asList(
                                                 new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
-                                                new MecanumVelocityConstraint(10, DriveConstants.TRACK_WIDTH)
+                                                new MecanumVelocityConstraint(20, DriveConstants.TRACK_WIDTH)
                                         )
                                 ),
                                 new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL)
@@ -383,13 +399,14 @@ public class TXCRedAutoInner extends LinearOpMode
 
                 robot.quiet();
                 robot.updateAll();
+
             }
 
             if(choiceO == 0) {
 
                 Trajectory move5_0 = drive.trajectoryBuilder(drive.getPoseEstimate())
                         .lineToLinearHeading(
-                                new com.acmerobotics.roadrunner.geometry.Pose2d(-26, -48, Math.toRadians(30)),
+                                new com.acmerobotics.roadrunner.geometry.Pose2d(-37, -26.5, Math.toRadians(0)),
                                 new MinVelocityConstraint(
                                         Arrays.asList(
                                                 new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -402,7 +419,7 @@ public class TXCRedAutoInner extends LinearOpMode
 
                 Trajectory move12_0 = drive.trajectoryBuilder(drive.getPoseEstimate())
                         .lineToLinearHeading(
-                                new com.acmerobotics.roadrunner.geometry.Pose2d(-26, -60, Math.toRadians(0)),
+                                new com.acmerobotics.roadrunner.geometry.Pose2d(-33, -30, Math.toRadians(0)),
                                 new MinVelocityConstraint(
                                         Arrays.asList(
                                                 new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -414,6 +431,8 @@ public class TXCRedAutoInner extends LinearOpMode
                         .build();
 
                 if(rings == 0){
+                    robot.wgFlip();
+                    robot.updateAll();
                     drive.followTrajectory(move12_0);
                 }
                 else {
@@ -426,9 +445,9 @@ public class TXCRedAutoInner extends LinearOpMode
                 sleep(500);
 
                 if (rings == 0) {
-                    Trajectory move6_0 = drive.trajectoryBuilder(move12_0.end())
+                    Trajectory move6_0 = drive.trajectoryBuilder(move5_0.end())
                             .lineToLinearHeading(
-                                    new com.acmerobotics.roadrunner.geometry.Pose2d(21 ,-50, Math.toRadians(120)),
+                                    new com.acmerobotics.roadrunner.geometry.Pose2d(19, -45, Math.toRadians(90)),
                                     new MinVelocityConstraint(
                                             Arrays.asList(
                                                     new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -450,7 +469,7 @@ public class TXCRedAutoInner extends LinearOpMode
                 if (rings == 1) {
                     Trajectory move7_0 = drive.trajectoryBuilder(move5_0.end())
                             .lineToLinearHeading(
-                                    new com.acmerobotics.roadrunner.geometry.Pose2d(30, -29, Math.toRadians(200)),
+                                    new com.acmerobotics.roadrunner.geometry.Pose2d(27, -22, Math.toRadians(180)),
                                     new MinVelocityConstraint(
                                             Arrays.asList(
                                                     new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -471,7 +490,7 @@ public class TXCRedAutoInner extends LinearOpMode
                 if (rings == 4) {
                     Trajectory move8_0 = drive.trajectoryBuilder(move5_0.end())
                             .lineToLinearHeading(
-                                    new com.acmerobotics.roadrunner.geometry.Pose2d(60, -42, Math.toRadians(160)),
+                                    new com.acmerobotics.roadrunner.geometry.Pose2d(52, -42, Math.toRadians(160)),
                                     new MinVelocityConstraint(
                                             Arrays.asList(
                                                     new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -494,7 +513,7 @@ public class TXCRedAutoInner extends LinearOpMode
 
         Trajectory move9_2 = drive.trajectoryBuilder(drive.getPoseEstimate())
                 .lineToLinearHeading(
-                        new com.acmerobotics.roadrunner.geometry.Pose2d(10, -12   , Math.toRadians(0)),
+                        new com.acmerobotics.roadrunner.geometry.Pose2d(6, -36   , Math.toRadians(0)),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -505,8 +524,6 @@ public class TXCRedAutoInner extends LinearOpMode
                 )
                 .build();
         drive.followTrajectory(move9_2);
-
-        robot.dropDown();
 
         robot.wgStow();
         robot.updateAll();

@@ -188,7 +188,7 @@ public class TXCBlueAutoOutter extends LinearOpMode
         //Four ring trajectories
         Trajectory four1 = drive.trajectoryBuilder(move2.end())
                 .lineToLinearHeading(
-                        new com.acmerobotics.roadrunner.geometry.Pose2d(50, 68, Math.toRadians(0)),
+                        new com.acmerobotics.roadrunner.geometry.Pose2d(50, 64, Math.toRadians(0)),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -205,6 +205,13 @@ public class TXCBlueAutoOutter extends LinearOpMode
         while(runtime.seconds() < 0.25 && opModeIsActive()){
             robot.updateAll();
         }
+
+        robot.fire();
+        while(robot.smode != LOAD){
+            robot.updateAll();
+        }
+        telemetry.update();
+        sleep(250);
 
         robot.fire();
         while(robot.smode != LOAD){
@@ -253,121 +260,124 @@ public class TXCBlueAutoOutter extends LinearOpMode
                 startPose1 = four1.end();
             }
 
-            Trajectory move1_01 = drive.trajectoryBuilder(startPose1)
-                    .lineToLinearHeading(
-                            new com.acmerobotics.roadrunner.geometry.Pose2d(-35, 60, Math.toRadians(0)),
-                            new MinVelocityConstraint(
-                                    Arrays.asList(
-                                            new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
-                                            new MecanumVelocityConstraint(40, DriveConstants.TRACK_WIDTH)
-                                    )
-                            ),
-                            new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL)
-                    )
-                    .build();
+            if(rings != 0) {
 
-            drive.followTrajectory(move1_01);
-            robot.dropDown();
+                Trajectory move1_01 = drive.trajectoryBuilder(startPose1)
+                        .lineToLinearHeading(
+                                new com.acmerobotics.roadrunner.geometry.Pose2d(-36, 56, Math.toRadians(0)),
+                                new MinVelocityConstraint(
+                                        Arrays.asList(
+                                                new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
+                                                new MecanumVelocityConstraint(40, DriveConstants.TRACK_WIDTH)
+                                        )
+                                ),
+                                new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL)
+                        )
+                        .build();
 
-            Trajectory move2_01 = drive.trajectoryBuilder(drive.getPoseEstimate())
-                    .lineToLinearHeading(
-                            new com.acmerobotics.roadrunner.geometry.Pose2d(-32, 33, Math.toRadians(0)),
-                            new MinVelocityConstraint(
-                                    Arrays.asList(
-                                            new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
-                                            new MecanumVelocityConstraint(30, DriveConstants.TRACK_WIDTH)
-                                    )
-                            ),
-                            new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL)
-                    )
-                    .build();
+                drive.followTrajectory(move1_01);
+                robot.dropDown();
 
-            Trajectory move3_01 = drive.trajectoryBuilder(move2_01.end())
-                    .lineToLinearHeading(
-                            new com.acmerobotics.roadrunner.geometry.Pose2d(-22, 31, Math.toRadians(0)))
-                    .build();
+                Trajectory move2_01 = drive.trajectoryBuilder(drive.getPoseEstimate())
+                        .lineToLinearHeading(
+                                new com.acmerobotics.roadrunner.geometry.Pose2d(-36, 29, Math.toRadians(0)),
+                                new MinVelocityConstraint(
+                                        Arrays.asList(
+                                                new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
+                                                new MecanumVelocityConstraint(30, DriveConstants.TRACK_WIDTH)
+                                        )
+                                ),
+                                new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL)
+                        )
+                        .build();
 
-            drive.followTrajectory(move2_01);
-            drive.followTrajectory(move3_01);
+                Trajectory move3_01 = drive.trajectoryBuilder(move2_01.end())
+                        .lineToLinearHeading(
+                                new com.acmerobotics.roadrunner.geometry.Pose2d(-22, 31, Math.toRadians(0)))
+                        .build();
 
-            robot.intake();
-            robot.updateAll();
+                drive.followTrajectory(move2_01);
+                drive.followTrajectory(move3_01);
 
-            sleep(1000);
-
-            robot.fire();
-            while(robot.smode != LOAD){
+                robot.intake();
                 robot.updateAll();
-            }
-            telemetry.update();
-            sleep(250);
 
-            robot.fire();
-            while(robot.smode != LOAD){
+                sleep(1000);
+
+                robot.fire();
+                while (robot.smode != LOAD) {
+                    robot.updateAll();
+                }
+                telemetry.update();
+                sleep(250);
+
+                robot.fire();
+                while (robot.smode != LOAD) {
+                    robot.updateAll();
+                }
+                telemetry.update();
+                sleep(250);
+
+
+                robot.intake();
                 robot.updateAll();
-            }
-            telemetry.update();
-            sleep(250);
 
+                Trajectory move4_01 = drive.trajectoryBuilder(move3_01.end())
+                        .lineToLinearHeading(
+                                new com.acmerobotics.roadrunner.geometry.Pose2d(-10, 31, Math.toRadians(0)),
+                                new MinVelocityConstraint(
+                                        Arrays.asList(
+                                                new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
+                                                new MecanumVelocityConstraint(30, DriveConstants.TRACK_WIDTH)
+                                        )
+                                ),
+                                new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL)
+                        )
+                        .build();
 
+                drive.followTrajectory(move4_01);
 
-            robot.intake();
-            robot.updateAll();
-
-            Trajectory move4_01 = drive.trajectoryBuilder(move3_01.end())
-                    .lineToLinearHeading(
-                            new com.acmerobotics.roadrunner.geometry.Pose2d(-10, 31, Math.toRadians(0)),
-                            new MinVelocityConstraint(
-                                    Arrays.asList(
-                                            new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
-                                            new MecanumVelocityConstraint(30, DriveConstants.TRACK_WIDTH)
-                                    )
-                            ),
-                            new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL)
-                    )
-                    .build();
-
-            drive.followTrajectory(move4_01);
-
-            robot.wgFlip();
-            robot.updateAll();
-
-            robot.fire();
-            while(robot.smode != LOAD){
+                robot.wgFlip();
                 robot.updateAll();
-            }
-            telemetry.update();
-            sleep(250);
 
-            robot.fire();
-            while(robot.smode != LOAD){
+                robot.fire();
+                while (robot.smode != LOAD) {
+                    robot.updateAll();
+                }
+                telemetry.update();
+                sleep(250);
+
+                robot.fire();
+                while (robot.smode != LOAD) {
+                    robot.updateAll();
+                }
+                telemetry.update();
+                sleep(250);
+
+                robot.fire();
+                while (robot.smode != LOAD) {
+                    robot.updateAll();
+                }
+                telemetry.update();
+                sleep(250);
+
+                robot.fire();
+                while (robot.smode != LOAD) {
+                    robot.updateAll();
+                }
+                telemetry.update();
+                sleep(250);
+
+                robot.quiet();
                 robot.updateAll();
-            }
-            telemetry.update();
-            sleep(250);
 
-            robot.fire();
-            while(robot.smode != LOAD){
-                robot.updateAll();
             }
-            telemetry.update();
-            sleep(250);
-
-            robot.fire();
-            while(robot.smode != LOAD){
-                robot.updateAll();
-            }
-            telemetry.update();
-            sleep(250);
-
-            robot.quiet();
-            robot.updateAll();
 
             if(choiceO == 0) {
 
-                Trajectory move5_0 = drive.trajectoryBuilder(move4_01.end())
+                Trajectory move5_0 = drive.trajectoryBuilder(drive.getPoseEstimate())
                         .lineToLinearHeading(
-                                new com.acmerobotics.roadrunner.geometry.Pose2d(-24, 24, Math.toRadians(45)),
+                                new com.acmerobotics.roadrunner.geometry.Pose2d(-32, 27, Math.toRadians(45)),
                                 new MinVelocityConstraint(
                                         Arrays.asList(
                                                 new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -378,7 +388,27 @@ public class TXCBlueAutoOutter extends LinearOpMode
                         )
                         .build();
 
-                drive.followTrajectory(move5_0);
+                Trajectory move12_0 = drive.trajectoryBuilder(drive.getPoseEstimate())
+                        .lineToLinearHeading(
+                                new com.acmerobotics.roadrunner.geometry.Pose2d(-31, 18, Math.toRadians(10)),
+                                new MinVelocityConstraint(
+                                        Arrays.asList(
+                                                new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
+                                                new MecanumVelocityConstraint(30, DriveConstants.TRACK_WIDTH)
+                                        )
+                                ),
+                                new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL)
+                        )
+                        .build();
+
+                if(rings == 0){
+                    robot.wgFlip();
+                    robot.updateAll();
+                    drive.followTrajectory(move12_0);
+                }
+                else {
+                    drive.followTrajectory(move5_0);
+                }
 
                 robot.wgClose();
                 robot.updateAll();
@@ -388,7 +418,7 @@ public class TXCBlueAutoOutter extends LinearOpMode
                 if (rings == 0) {
                     Trajectory move6_0 = drive.trajectoryBuilder(drive.getPoseEstimate())
                             .lineToLinearHeading(
-                                    new com.acmerobotics.roadrunner.geometry.Pose2d(23, 47, Math.toRadians(-90)),
+                                    new com.acmerobotics.roadrunner.geometry.Pose2d(15, 47, Math.toRadians(-90)),
                                     new MinVelocityConstraint(
                                             Arrays.asList(
                                                     new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -410,7 +440,7 @@ public class TXCBlueAutoOutter extends LinearOpMode
                 if (rings == 1) {
                     Trajectory move7_0 = drive.trajectoryBuilder(drive.getPoseEstimate())
                             .lineToLinearHeading(
-                                    new com.acmerobotics.roadrunner.geometry.Pose2d(30, 47, Math.toRadians(180)),
+                                    new com.acmerobotics.roadrunner.geometry.Pose2d(20, 47, Math.toRadians(180)),
                                     new MinVelocityConstraint(
                                             Arrays.asList(
                                                     new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -467,6 +497,8 @@ public class TXCBlueAutoOutter extends LinearOpMode
 
         robot.wgStow();
         robot.updateAll();
+
+        sleep(2000);
 
 
 

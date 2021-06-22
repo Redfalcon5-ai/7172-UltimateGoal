@@ -16,6 +16,7 @@ import com.spartronics4915.lib.T265Camera;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.util.RobotHardware;
 
+@Disabled
 @TeleOp(name="T265AutoTarget", group="Linear Opmode")
 public class T265AutoTarget extends LinearOpMode
 {

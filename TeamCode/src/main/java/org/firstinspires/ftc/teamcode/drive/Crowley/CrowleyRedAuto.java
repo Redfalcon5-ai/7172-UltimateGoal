@@ -22,7 +22,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import java.util.Arrays;
 
-
+@Disabled
 @Autonomous(name="CrowleyRedAuto", group="CrowleyRedAuto")
 public class CrowleyRedAuto extends LinearOpMode
 {

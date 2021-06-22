@@ -17,6 +17,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.util.DualPad;
 import org.firstinspires.ftc.teamcode.util.RobotHardware;
 
+@Disabled
 @TeleOp(name="T265DriveSample", group="Linear Opmode")
 public class T265DriveSample extends LinearOpMode
 {

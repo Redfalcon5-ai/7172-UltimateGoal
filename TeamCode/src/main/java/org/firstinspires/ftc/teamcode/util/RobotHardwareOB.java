@@ -40,7 +40,7 @@ public class RobotHardwareOB
     public final double SHOOTER_VELOCITY_OFF = 0;
     public final double SHOOTER_VELOCITY_NORMAL = 1520;     // deprecated
     public final double SHOOTER_VELOCITY_LOW = 1360;        // deprecated
-    public final double GRABBER_POSITION_CLOSE = 0.025;
+    public final double GRABBER_POSITION_CLOSE = 0.0125;
     public final double GRABBER_POSITION_OPEN = 0.85;
     public final double WOBBLE_VELOCITY_STOW = -700;
     public final double WOBBLE_VELOCITY_FLIP = 700;
@@ -479,7 +479,7 @@ public class RobotHardwareOB
                 turretPosition = turretBase + (v - turretVolt) * turretMult + turretAdjust;
         }
         turretPosition = Range.clip(turretPosition, TURRET_POSITION_MIN, TURRET_POSITION_MAX);
-        turret.setPosition(turretPosition);
+        turret.setPosition(turretPosition + 0.0225);
     }
 
     // drive robot forward/strafe, maintain heading of pixy center
