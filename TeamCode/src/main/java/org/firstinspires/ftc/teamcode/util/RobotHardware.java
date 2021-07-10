@@ -24,6 +24,7 @@ public class RobotHardware
     public NormalizedColorSensor colorv3 = null;
     public DcMotorEx wobble = null;
     public Servo grabber = null;
+    public Servo turret = null;
 
     //Create Hardware Map Object
     HardwareMap hwMap = null;
@@ -54,6 +55,7 @@ public class RobotHardware
         colorv3 = hwMap.get(NormalizedColorSensor.class, "colorv3");
         wobble = (DcMotorEx)hwMap.get(DcMotor.class, "wobble");
         grabber = hwMap.get(Servo.class, "grabber");
+        turret = hwMap.get(Servo.class, "turret");
 
 
 
@@ -66,10 +68,9 @@ public class RobotHardware
         intake.setPower(0);
         conveyor.setPower(0);
         tilt.setPosition(0.66);
-        indexer.setPosition(0.85);
+        indexer.setPosition(0.5);
         shooter1.setPower(0);
-        wobble.setPower(0);
-        grabber.setPosition(0.5);
+        turret.setPosition(0);
 
         // Set all motors to run without encoders
         //Set mode for sensors
