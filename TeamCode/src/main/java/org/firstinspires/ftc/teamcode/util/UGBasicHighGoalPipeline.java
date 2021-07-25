@@ -20,7 +20,7 @@ public class UGBasicHighGoalPipeline extends OpenCvPipeline {
     protected double centerX;
     protected double centerY;
 
-    public int minThreshold, maxThreshold;
+    public int minThreshold, maxThreshold, blueMinThreshold;
     private Mat blueThreshold;
     private Mat redThreshold;
 
@@ -53,6 +53,7 @@ public class UGBasicHighGoalPipeline extends OpenCvPipeline {
 
         minThreshold = 155;
         maxThreshold = 200;
+        blueMinThreshold = 140;
     }
 
     @Override
@@ -77,7 +78,7 @@ public class UGBasicHighGoalPipeline extends OpenCvPipeline {
         Core.extractChannel(matYCrCb, blueChannel, 2);
 
         // Blue threshold
-        Imgproc.threshold(blueChannel, blueThreshold, minThreshold, maxThreshold, Imgproc.THRESH_BINARY);
+        Imgproc.threshold(blueChannel, blueThreshold, blueMinThreshold, maxThreshold, Imgproc.THRESH_BINARY);
         // Red threshold
         Imgproc.threshold(redChannel, redThreshold, minThreshold, maxThreshold, Imgproc.THRESH_BINARY);
 
@@ -107,7 +108,7 @@ public class UGBasicHighGoalPipeline extends OpenCvPipeline {
                 return Double.compare(Imgproc.boundingRect(t0).width, Imgproc.boundingRect(t1).width);
             });
             blueRect = Imgproc.boundingRect(biggestBlueContour);
-            Imgproc.rectangle(input, blueRect, new Scalar(0, 0, 255), 3);
+            Imgproc.rectangle(input, blueRect, new Scalar(18, 41, 147), 3);
         } else {
             blueRect = null;
         }

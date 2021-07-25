@@ -22,9 +22,9 @@ import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
 
+
 @TeleOp
-public class WebcamExample extends LinearOpMode
-{
+public class WebcamExample extends LinearOpMode {
     OpenCvCamera webcam;
 
     RobotHardware robot = new RobotHardware();
@@ -36,10 +36,20 @@ public class WebcamExample extends LinearOpMode
     double intakePow = 0.0;
     double conveyorPow = 0.0;
     double flyPow = 0.0;
+    double REDx1 = 241;
+    double REDy1 = 0.352;
+    double REDx2 = 62;
+    double REDy2 = 0.522;
+    double BLUEx1 = 157;
+    double BLUEy1 = 0.481;
+    double BLUEx2 = 248;
+    double BLUEy2 = 0.394;
+    boolean turretSet = false;
+    boolean red = true;
+
 
     @Override
-    public void runOpMode()
-    {
+    public void runOpMode() {
         telemetry.addData("Status", "Initialized");
         robot.init(hardwareMap);
         robot.rf.setDirection(DcMotorSimple.Direction.FORWARD);
@@ -50,7 +60,7 @@ public class WebcamExample extends LinearOpMode
         robot.intake.setDirection(DcMotorSimple.Direction.FORWARD);
         robot.conveyor.setDirection(DcMotorSimple.Direction.REVERSE);
         robot.shooter1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        robot.shooter1.setVelocityPIDFCoefficients(15,0.75,0,0);
+        robot.shooter1.setVelocityPIDFCoefficients(100, 0.75, 0, 0);
         robot.indexer.setDirection(Servo.Direction.FORWARD);
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
@@ -59,11 +69,9 @@ public class WebcamExample extends LinearOpMode
         UGBasicHighGoalPipeline pipeline = new UGBasicHighGoalPipeline();
         webcam.setPipeline(pipeline);
 
-        webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
-        {
+        webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
-            public void onOpened()
-            {
+            public void onOpened() {
                 webcam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
             }
         });
@@ -75,8 +83,7 @@ public class WebcamExample extends LinearOpMode
 
         robot.turret.setPosition(turretPos);
 
-        while (opModeIsActive())
-        {
+        while (opModeIsActive()) {
             gpad.mergePads(gamepad1, gamepad2);
 
             //Driving Controls
@@ -115,25 +122,64 @@ public class WebcamExample extends LinearOpMode
                 conveyorPow = -2;
             }
 
-            if(gpad.dpad_right && turretPos > 0.02){
-                turretPos -= 0.005;
+            if (gpad.y) {
+                turretSet = !turretSet;
             }
-            if(gpad.dpad_left && turretPos < 0.7){
-                turretPos += 0.005;
+            if (gpad.b) {
+                red = !red;
+            }
+
+            if (turretSet) {
+                if (gpad.dpad_right && turretPos > 0.275) {
+                    turretPos -= 0.001;
+                }
+                if (gpad.dpad_left && turretPos < 0.63) {
+                    turretPos += 0.001;
+                }
             }
 
             //Trigger Controls
             if (gamepad1.right_trigger > 0) {
                 intakePow = -1;
-                if(conveyorPow != -2){
+                if (conveyorPow != -2) {
                     conveyorPow = -1;
                 }
             }
             if (gamepad1.left_trigger > 0) {
                 intakePow = 1;
-                if(conveyorPow != -2){
+                if (conveyorPow != -2) {
                     conveyorPow = 1;
                 }
+            }
+
+            if (pipeline.isRedVisible() && red) {
+                Rect redRect = pipeline.getRedRect();
+                Point centerOfRedGoal = pipeline.getCenterofRect(redRect);
+
+                double targetPos = getTargetPos(REDx1, REDy1, REDx2, REDy2, centerOfRedGoal.x);
+
+                telemetry.addData("Red goal position",
+                        centerOfRedGoal.toString());
+                telemetry.addData("Target Pos", targetPos);
+
+                if (!turretSet)
+                    turretPos = targetPos;
+
+            }
+
+
+            if (pipeline.isBlueVisible() && !red) {
+                Rect blueRect = pipeline.getBlueRect();
+                Point centerOfBlueGoal = pipeline.getCenterofRect(blueRect);
+
+                double targetPos = getTargetPos(BLUEx1, BLUEy1, BLUEx2, BLUEy2, centerOfBlueGoal.x);
+
+                telemetry.addData("Blue goal position",
+                        centerOfBlueGoal.toString());
+                telemetry.addData("Target Pos", targetPos);
+
+                if (!turretSet)
+                    turretPos = targetPos;
             }
 
             //Set Powers
@@ -143,25 +189,11 @@ public class WebcamExample extends LinearOpMode
             robot.indexer.setPosition(indexerPos);
             robot.turret.setPosition(turretPos);
 
+
             /*
              * Send some stats to the telemetry
              */
-            if (pipeline.isRedVisible()) {
-                Rect redRect = pipeline.getRedRect();
-                Point centerOfRedGoal = pipeline.getCenterofRect(redRect);
 
-                telemetry.addData("Red goal position",
-                        centerOfRedGoal.toString());
-            }
-
-// Blue Goal
-            if (pipeline.isBlueVisible()) {
-                Rect blueRect = pipeline.getBlueRect();
-                Point centerOfBlueGoal = pipeline.getCenterofRect(blueRect);
-
-                telemetry.addData("Blue goal position",
-                        centerOfBlueGoal.toString());
-            }
 
             telemetry.addData("Frame Count", webcam.getFrameCount());
             telemetry.addData("FPS", String.format("%.2f", webcam.getFps()));
@@ -170,10 +202,12 @@ public class WebcamExample extends LinearOpMode
             telemetry.addData("Overhead time ms", webcam.getOverheadTimeMs());
             telemetry.addData("Theoretical max FPS", webcam.getCurrentPipelineMaxFps());
             telemetry.addData("pos", turretPos);
+            telemetry.addData("Set", turretSet);
+            telemetry.addData("Red", red);
             telemetry.update();
 
-            sleep(100);
         }
+
     }
 
     //Method for Mecanum Drive
@@ -198,5 +232,13 @@ public class WebcamExample extends LinearOpMode
     //Method to get servo powers
     public double servoPow(double x){
         return (motorPow(x)*0.4) + 0.5;
+    }
+
+    public double getTargetPos(double x1, double y1, double x2, double y2, double xCoor){
+        double slope = (y1 - y2)/(x1 - x2);
+        double yIntercept = y1 - slope*x1;
+        double returnPos = slope*xCoor + yIntercept;
+
+        return returnPos;
     }
 }

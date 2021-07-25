@@ -1,62 +1,87 @@
 package org.firstinspires.ftc.teamcode.drive.Hedrick;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.arcrobotics.ftclib.geometry.Transform2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.spartronics4915.lib.T265Camera;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.util.DualPad;
+import org.firstinspires.ftc.teamcode.util.RobotHardware;
 import org.firstinspires.ftc.teamcode.util.RobotHardwareAS;
+import org.firstinspires.ftc.teamcode.util.UGBasicHighGoalPipeline;
+import org.opencv.core.Point;
+import org.opencv.core.Rect;
+import org.openftc.easyopencv.OpenCvCamera;
+import org.openftc.easyopencv.OpenCvCameraFactory;
+import org.openftc.easyopencv.OpenCvCameraRotation;
 
-
+@Config
 @TeleOp
 
+
 public class PIDTune extends LinearOpMode {
-    RobotHardwareAS robot = new RobotHardwareAS();
-    DualPad gpad = new DualPad();
     FtcDashboard dashboard = FtcDashboard.getInstance();
     Telemetry dashboardTelemetry = dashboard.getTelemetry();
 
+    OpenCvCamera webcam;
 
+    RobotHardware robot = new RobotHardware();
+    double turretPos = 0.3;
 
-    //Create T265 Camera Object
-    private static T265Camera slamra = null;
+    DualPad gpad = new DualPad();
 
-    //Set Camera's Position on the robot (Mount with wire on the left)
-    String CameraPos = "left";
-    String left = "left";
-    String right = "right";
-    String back = "back";
-    String front = "front";
+    //Create Variables for Motor/Servo Powers
+    double intakePow = 0.0;
+    double conveyorPow = 0.0;
+    double flyPow = 0.0;
+    double x1 = 72;
+    double y1 = 0.565;
+    double x2 = 269;
+    double y2 = 0.37;
 
-    //Instance Variables for threading
-    double Y = 0;
-    double X = 0;
-    double Heading = 0;
-
-    boolean slam = false;
+    public static double p = 200;
 
     @Override
     public void runOpMode() {
+        telemetry.addData("Status", "Initialized");
         robot.init(hardwareMap);
         robot.rf.setDirection(DcMotorSimple.Direction.FORWARD);
         robot.rb.setDirection(DcMotorSimple.Direction.FORWARD);
         robot.lf.setDirection(DcMotorSimple.Direction.REVERSE);
         robot.lb.setDirection(DcMotorSimple.Direction.REVERSE);
+        robot.shooter1.setDirection(DcMotorSimple.Direction.FORWARD);
+        robot.intake.setDirection(DcMotorSimple.Direction.FORWARD);
+        robot.conveyor.setDirection(DcMotorSimple.Direction.REVERSE);
+        robot.shooter1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        robot.shooter1.setVelocityPIDFCoefficients(p, 0.75, 0, 0);
+        robot.indexer.setDirection(Servo.Direction.FORWARD);
 
-        //Init SLAM and the camera with the correct starting coordinates
-        initCameraPos();
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
 
-        boolean aLast = false;
-        boolean bLast = false;
-        boolean wgflip = false;
-        boolean wgopen = false;
+        UGBasicHighGoalPipeline pipeline = new UGBasicHighGoalPipeline();
+        webcam.setPipeline(pipeline);
 
+        webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+            @Override
+            public void onOpened() {
+                webcam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+            }
+        });
+
+        telemetry.addLine("Waiting for start");
+        telemetry.update();
 
 
         waitForStart();
@@ -69,164 +94,141 @@ public class PIDTune extends LinearOpMode {
         while (opModeIsActive()) {
             gpad.mergePads(gamepad1, gamepad2);
 
-            if(!slam){
-                try{
-                    slamra.start();
-                    slam = true;
-                } catch (Exception e){
-                    slam = false;
+            robot.turret.setPosition(turretPos);
+
+            while (opModeIsActive()) {
+                gpad.mergePads(gamepad1, gamepad2);
+
+                //Driving Controls
+                double leftStickY = -gpad.left_stick_y; //Forward and Backward
+                double rightStickY = -gpad.right_stick_y;   //Forward and Backward
+                double leftStickX = gpad.left_stick_x;  //Turning
+                double rightStickX = gpad.right_stick_x;    //Strafing
+                mecDrive(leftStickY, rightStickY, leftStickX, rightStickX);
+
+                //Latch Controls
+                if (conveyorPow >= -1 && conveyorPow <= 1) {
+                    conveyorPow = 0;
                 }
-            }
-
-            double jy = -gpad.left_stick_y - gpad.right_stick_y; // forward
-            double jx = gpad.right_stick_x;  // strafing
-            double jw = gpad.left_stick_x;   // turning
-            if (jx >= 0.5 || jx <= -0.5) targetHeading = zeroHeading;
-            if (jw != 0) targetHeading = 9999;
-
-            if (gpad.dpad_right) {
-                if(slam) {
-                    robot.driveYDH(jy, 0.14, zeroHeading, Heading);
+                if (intakePow >= -1 && intakePow <= 1) {
+                    intakePow = 0;
                 }
-                else if(!slam){
-                    robot.driveYDH(jy, 0.14, zeroHeading);
+
+
+                //Distance Sensor controls
+                if (((DistanceSensor) robot.colorv3).getDistance(DistanceUnit.CM) < 4) {
+                    flyPow = 1500;
+                    conveyorPow = -2;
                 }
-                robot.setFireVelocity(robot.SHOOTER_VELOCITY_NORMAL);
-            }
-            else if (gpad.dpad_up) {
-                if(slam) {
-                    robot.driveYDH(jy, 0.101, zeroHeading, Heading);
+
+                //Bumper and Touch Switch Controls
+                double indexerPos = 0.5;
+                if (gpad.right_bumper) indexerPos = 0.0;
+
+                //Unlatch
+                if (gpad.x) {
+                    flyPow = 0;
+                    conveyorPow = 0;
                 }
-                else if(!slam){
-                    robot.driveYDH(jy, 0.101, zeroHeading);
+                if (gpad.xShift) {
+                    flyPow = 1500;
+                    conveyorPow = -2;
                 }
-                robot.setFireVelocity(robot.SHOOTER_VELOCITY_LOW);
-            }
-            else if (gpad.dpad_left) {
-                if(slam) {
-                    robot.driveYDH(jy, 0.0685, zeroHeading, Heading);
+
+                if (gpad.dpad_right && turretPos > 0.275) {
+                    turretPos -= 0.005;
                 }
-                else if(!slam){
-                    robot.driveYDH(jy, 0.0685, zeroHeading);
+                if (gpad.dpad_left && turretPos < 0.63) {
+                    turretPos += 0.005;
                 }
-                robot.setFireVelocity(robot.SHOOTER_VELOCITY_LOW);
-            }
-            else if (gpad.dpad_down) {
-                if(slam) {
-                    robot.driveYDH(jy, 0.058, zeroHeading, Heading);
+
+                //Trigger Controls
+                if (gamepad1.right_trigger > 0) {
+                    intakePow = -1;
+                    if (conveyorPow != -2) {
+                        conveyorPow = -1;
+                    }
                 }
-                else if(!slam){
-                    robot.driveYDH(jy, 0.058, zeroHeading);
+                if (gamepad1.left_trigger > 0) {
+                    intakePow = 1;
+                    if (conveyorPow != -2) {
+                        conveyorPow = 1;
+                    }
                 }
-                robot.setFireVelocity(robot.SHOOTER_VELOCITY_LOW);
-            }
 
-            else if (wgflip || targetHeading == 9999)
-                robot.driveYXW(jy, jx, jw);
-            else {
-                if (slam) {
-                    robot.driveYXH(jy, jx, targetHeading, Heading);
-                } else if (!slam) {
-                    robot.driveYXH(jy, jx, targetHeading);
+                if (pipeline.isRedVisible()) {
+                    Rect redRect = pipeline.getRedRect();
+                    Point centerOfRedGoal = pipeline.getCenterofRect(redRect);
+
+                    telemetry.addData("Red goal position",
+                            centerOfRedGoal.toString());
                 }
+
+                if (pipeline.isBlueVisible()) {
+                    Rect blueRect = pipeline.getBlueRect();
+                    Point centerOfBlueGoal = pipeline.getCenterofRect(blueRect);
+
+                    telemetry.addData("Blue goal position",
+                            centerOfBlueGoal.toString());
+                }
+
+                //Set Powers
+                robot.conveyor.setPower(motorPow(conveyorPow));
+                robot.shooter1.setVelocity(flyPow);
+                robot.intake.setPower(motorPow(intakePow));
+                robot.indexer.setPosition(indexerPos);
+                robot.turret.setPosition(turretPos);
+
+                /*
+                 * Send some stats to the telemetry
+                 */
+
+
+                telemetry.addData("Frame Count", webcam.getFrameCount());
+                telemetry.addData("FPS", String.format("%.2f", webcam.getFps()));
+                telemetry.addData("Total frame time ms", webcam.getTotalFrameTimeMs());
+                telemetry.addData("Pipeline time ms", webcam.getPipelineTimeMs());
+                telemetry.addData("Overhead time ms", webcam.getOverheadTimeMs());
+                telemetry.addData("Theoretical max FPS", webcam.getCurrentPipelineMaxFps());
+                telemetry.addData("pos", turretPos);
+                telemetry.update();
+
+                double x = 1200;
+                double y = 2000;
+
+                dashboardTelemetry.addData("velocity", robot.shooter1.getVelocity());
+                dashboardTelemetry.addData("x", x);
+                dashboardTelemetry.addData("y", y);
+                dashboardTelemetry.update();
             }
-
-            if (gpad.y){
-                zeroHeading = robot.getIMUHeading();
-            }
-
-            if (gpad.right_trigger > 0.25) robot.intake();
-            if (gpad.right_bumper) robot.outtake();
-            if (gpad.x) robot.quiet();
-            if (gpad.xShift) robot.shooter(1700);
-            if (gpad.left_bumper) robot.fire();
-
-            boolean aThis = gpad.a;
-            if (aThis && !aLast) {
-                wgflip = !wgflip;
-                if (wgflip) robot.wgFlip();
-                else robot.wgStow();
-            }
-            aLast = aThis;
-
-            boolean bThis = gpad.b;
-            if (bThis && !bLast) {
-                wgopen = !wgopen;
-                if (wgopen) robot.wgOpen();
-                else robot.wgClose();
-            }
-            bLast = bThis;
-
-
-
-
-            robot.updateAll();
-
-            double x = 1200;
-            double y = 2000;
-
-            if(robot.isShooterReady()){
-                dashboardTelemetry.addData("Shooter Ready", 1400);
-            }
-            else{
-                dashboardTelemetry.addData("Shooter Ready", 1300);
-            }
-
-            if(slam) {
-                T265Camera.CameraUpdate up = slamra.getLastReceivedCameraUpdate();
-                Y = (-1) * (up.pose.getTranslation().getY() / 0.0254);
-                X = (-1) * (up.pose.getTranslation().getX() / 0.0254);
-                Heading = (up.pose.getHeading()) * (57.295);
-            }
-
-            dashboardTelemetry.addData("velocity", robot.shooter1.getVelocity());
-            dashboardTelemetry.addData("x", x);
-            dashboardTelemetry.addData("y", y);
-            dashboardTelemetry.update();
-
-            telemetry.addData("Voltage", robot.getLRangeV());
-            telemetry.update();
         }
 
-        if(slam) {
-            slamra.stop();
-        }
+        //Method for Mecanum Drive
+
+
     }
 
-    public void mecDrive(double forward, double forward2, double turn, double strafe) {
+    public void mecDrive (double forward, double forward2, double turn, double strafe){
         robot.lf.setPower(forward + forward2 + turn + strafe);
         robot.rf.setPower(forward + forward2 - turn - strafe);
         robot.lb.setPower(forward + forward2 + turn - strafe);
         robot.rb.setPower(forward + forward2 - turn + strafe);
     }
 
-    //Method to Init SLAM and the camera with the correct starting coordinates
-    public void initCameraPos(){
-        if (slamra == null) {
-            slamra = new T265Camera(new Transform2d(), 0.1, hardwareMap.appContext);
+    //Method to get motor powers
+    public double motorPow ( double x){
+        if (x > 1) {
+            return x - 1;
         }
-
-        if(CameraPos.equals(left)){
-            //Center the camera to its position on the robot
-            slamra.setPose(new Pose2d(-31 * 0.0254, -12 * 0.0254, Rotation2d.fromDegrees(0)));
+        if (x < -1) {
+            return x + 1;
         }
-
-        if(CameraPos.equals(right)){
-            //Center the camera to its position on the robot
-            slamra.setPose(new Pose2d(31 * 0.0254, 12 * 0.0254, Rotation2d.fromDegrees(0)));
-        }
-
-        if(CameraPos.equals(back)){
-            //Center the camera to its position on the robot
-            slamra.setPose(new Pose2d(-12 * 0.0254, 31 * 0.0254, Rotation2d.fromDegrees(0)));
-        }
-
-        if(CameraPos.equals(front)){
-            //Center the camera to its position on the robot
-            slamra.setPose(new Pose2d(12 * 0.0254, -31 * 0.0254, Rotation2d.fromDegrees(0)));
-        }
+        return x;
     }
 
-
+    //Method to get servo powers
+    public double servoPow ( double x){
+        return (motorPow(x) * 0.4) + 0.5;
+    }
 }
 
