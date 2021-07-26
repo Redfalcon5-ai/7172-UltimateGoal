@@ -1,12 +1,8 @@
 package org.firstinspires.ftc.teamcode.drive.dev;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.robot.Robot;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.util.DualPad;
 import org.firstinspires.ftc.teamcode.util.RobotHardwareOBV2;
@@ -15,12 +11,12 @@ import org.opencv.core.Rect;
 
 @TeleOp
 
-public class MTIOp extends LinearOpMode {
+public class MTIOpBlue extends LinearOpMode {
     RobotHardwareOBV2 robot = new RobotHardwareOBV2();
     DualPad gpad = new DualPad();
-    
+
     int lastShot = 0;
-    
+
     @Override
     public void runOpMode() {
         robot.init(hardwareMap);
@@ -28,6 +24,8 @@ public class MTIOp extends LinearOpMode {
         robot.rb.setDirection(DcMotorSimple.Direction.FORWARD);
         robot.lf.setDirection(DcMotorSimple.Direction.REVERSE);
         robot.lb.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        robot.setTargetColor(2);
 
         boolean aLast = false;
         boolean bLast = false;
