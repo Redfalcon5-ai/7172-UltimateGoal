@@ -323,7 +323,6 @@ public class CrowleyRedAuto extends LinearOpMode
         waitForStart();
 
         robot.shooter(1660);
-        robot.setArms(false);
 
         drive.followTrajectory(move1);
 

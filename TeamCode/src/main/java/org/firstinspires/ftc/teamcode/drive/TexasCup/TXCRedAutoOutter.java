@@ -21,9 +21,11 @@ import org.firstinspires.ftc.teamcode.util.RingDeterminationPipeline;
 import org.firstinspires.ftc.teamcode.util.RingDeterminationPipeline2;
 import org.firstinspires.ftc.teamcode.util.RobotHardwareAS;
 import org.firstinspires.ftc.teamcode.util.RobotHardwareOB;
+import org.firstinspires.ftc.teamcode.util.RobotHardwareOBV2;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
+import org.firstinspires.ftc.teamcode.util.RobotHardwareOBV2.ShootMode;
 
 import java.util.Arrays;
 
@@ -34,7 +36,7 @@ import static org.firstinspires.ftc.teamcode.util.RobotHardwareOB.ShootMode.LOAD
 public class TXCRedAutoOutter extends LinearOpMode
 {
     //Create elapsed time and robot hardware objects
-    RobotHardwareOB robot   = new RobotHardwareOB();
+    RobotHardwareOBV2 robot   = new RobotHardwareOBV2();
     ElapsedTime runtime = new ElapsedTime();
 
     //OpenCV stuff
@@ -52,7 +54,7 @@ public class TXCRedAutoOutter extends LinearOpMode
 
         //Start OpenCV
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
+        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 2"), cameraMonitorViewId);
         pipeline = new RingDeterminationPipeline2.SkystoneDeterminationPipeline();
         webcam.setPipeline(pipeline);
         webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
@@ -117,10 +119,12 @@ public class TXCRedAutoOutter extends LinearOpMode
             telemetry.update();
         }
 
+        webcam.closeCameraDevice();
+
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
 
-
+        robot.startTargetingCamera();
 
         //Universal trajectories
         Trajectory move1 = drive.trajectoryBuilder(startPose)
@@ -225,8 +229,9 @@ public class TXCRedAutoOutter extends LinearOpMode
 
         robot.telemetry = telemetry;
         telemetry.log().setCapacity(16);
-        robot.setTarget(0,0);
-        robot.setShootMode(LOAD);
+        robot.setTarget(0);
+        robot.setTargetColor(1);
+        robot.setShootMode(RobotHardwareOBV2.ShootMode.LOAD);
         robot.updateAll();
 
         drive.followTrajectory(move1);
@@ -238,28 +243,28 @@ public class TXCRedAutoOutter extends LinearOpMode
         }
 
         robot.fire();
-        while(robot.smode != LOAD){
+        while(robot.smode != RobotHardwareOBV2.ShootMode.LOAD){
             robot.updateAll();
         }
         telemetry.update();
         sleep(250);
 
         robot.fire();
-        while(robot.smode != LOAD){
+        while(robot.smode != RobotHardwareOBV2.ShootMode.LOAD){
             robot.updateAll();
         }
         telemetry.update();
         sleep(250);
 
         robot.fire();
-        while(robot.smode != LOAD){
+        while(robot.smode != RobotHardwareOBV2.ShootMode.LOAD){
             robot.updateAll();
         }
         telemetry.update();
         sleep(250);
 
         robot.fire();
-        while(robot.smode != LOAD){
+        while(robot.smode != RobotHardwareOBV2.ShootMode.LOAD){
             robot.updateAll();
         }
         telemetry.update();
@@ -348,14 +353,14 @@ public class TXCRedAutoOutter extends LinearOpMode
                 sleep(1000);
 
                 robot.fire();
-                while (robot.smode != LOAD) {
+                while (robot.smode != RobotHardwareOBV2.ShootMode.LOAD) {
                     robot.updateAll();
                 }
                 telemetry.update();
                 sleep(250);
 
                 robot.fire();
-                while (robot.smode != LOAD) {
+                while (robot.smode != RobotHardwareOBV2.ShootMode.LOAD) {
                     robot.updateAll();
                 }
                 telemetry.update();
@@ -383,21 +388,21 @@ public class TXCRedAutoOutter extends LinearOpMode
                 robot.updateAll();
 
                 robot.fire();
-                while (robot.smode != LOAD) {
+                while (robot.smode != RobotHardwareOBV2.ShootMode.LOAD) {
                     robot.updateAll();
                 }
                 telemetry.update();
                 sleep(250);
 
                 robot.fire();
-                while (robot.smode != LOAD) {
+                while (robot.smode != RobotHardwareOBV2.ShootMode.LOAD) {
                     robot.updateAll();
                 }
                 telemetry.update();
                 sleep(250);
 
                 robot.fire();
-                while (robot.smode != LOAD) {
+                while (robot.smode != RobotHardwareOBV2.ShootMode.LOAD) {
                     robot.updateAll();
                 }
                 telemetry.update();

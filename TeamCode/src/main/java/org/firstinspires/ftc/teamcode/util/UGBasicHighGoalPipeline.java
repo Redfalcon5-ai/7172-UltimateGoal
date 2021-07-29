@@ -108,7 +108,7 @@ public class UGBasicHighGoalPipeline extends OpenCvPipeline {
                 return Double.compare(Imgproc.boundingRect(t0).width, Imgproc.boundingRect(t1).width);
             });
             blueRect = Imgproc.boundingRect(biggestBlueContour);
-            Imgproc.rectangle(input, blueRect, new Scalar(18, 41, 147), 3);
+            Imgproc.rectangle(input, blueRect, new Scalar(95,114,180), 3);
         } else {
             blueRect = null;
         }

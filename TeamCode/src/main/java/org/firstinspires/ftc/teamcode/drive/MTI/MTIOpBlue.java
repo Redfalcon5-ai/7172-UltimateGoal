@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.drive.dev;
+package org.firstinspires.ftc.teamcode.drive.MTI;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -26,6 +26,7 @@ public class MTIOpBlue extends LinearOpMode {
         robot.lb.setDirection(DcMotorSimple.Direction.REVERSE);
 
         robot.setTargetColor(2);
+        robot.startTargetingCamera();
 
         boolean aLast = false;
         boolean bLast = false;
@@ -74,8 +75,8 @@ public class MTIOpBlue extends LinearOpMode {
 
             //Adjust Ring Path
             if (gpad.x && !dpadLast) {
-                if (gpad.dpad_left) robot.adjustTurret(-0.015);
-                if (gpad.dpad_right) robot.adjustTurret(+0.015);
+                if (gpad.dpad_left) robot.adjustTurret(-0.008);
+                if (gpad.dpad_right) robot.adjustTurret(+0.008);
                 if (gpad.dpad_up) robot.adjustShooter(+20);
                 if (gpad.dpad_down) robot.adjustShooter(-20);
             }
@@ -152,6 +153,8 @@ public class MTIOpBlue extends LinearOpMode {
             telemetry.addData("Heading", robot.getHeading());
             telemetry.addData("targetServoPos", robot.getTargetServoPos());
             telemetry.addData("Color", robot.getTargetColor());
+            telemetry.addData("Center", robot.goalPos);
+            telemetry.addData("Width", robot.goalWidth);
             telemetry.update();
         }
     }

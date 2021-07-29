@@ -300,7 +300,6 @@ public class CrowleyBlueAuto extends LinearOpMode
         waitForStart();
 
         robot.shooter(1600);
-        robot.setArms(false);
 
         drive.followTrajectory(move1);
 

@@ -4,6 +4,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+
+import com.qualcomm.robotcore.hardware.LED;
 import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.hardware.AnalogInput;
@@ -58,7 +60,13 @@ public class RobotHardwareOBV2
     public final double TURRET_POSITION_STRAIGHT = 0.56;
     public final double DROP_DOWN_POS = 0.4;
     public final double DROP_UP_POS = 0.6;
+    public final double CAM_RED_OUTTER_POS = 0.3103;
+    public final double CAM_RED_INNER_POS = 0.57129;
+    public final double CAM_BLUE_OUTTER_POS = 0.5747;
+    public final double CAM_BLUE_INNER_POS = 0.4212;
     public double targetServoPos = 0.5;
+    public double cameraPos = 0.5;
+    public double goalWidth = 0;
 
     public enum ShootMode { IDLE, LOAD, TRIGGER, FIRE, RECOVER }
     public ShootMode smode = ShootMode.IDLE;
@@ -85,6 +93,7 @@ public class RobotHardwareOBV2
     public DcMotorEx wobble = null;
     public Servo grabber = null;
     public Servo targetServo = null;
+    public Servo camera = null;
 
     public DigitalChannel ledr0 = null;
     public DigitalChannel ledr1 = null;
@@ -120,26 +129,27 @@ public class RobotHardwareOBV2
     double REDy1 = 0.525;
     double REDx2 = 240;
     double REDy2 = 0.63;
-    double goalPos = 0;
+    public double goalPos = 0;
     boolean goalSeen = false;
     boolean goalTurn = false;
 
     double[][] redTargets = {
-            {61, 0.455, 187, 0.59, 1500},
-            {61, 0.455, 187, 0.59, 1400},
-            {261, 0.515, 186, 0.455, 1380},
-            {186, 0.485, 231, 0.53, 1380},
-            {231, 0.56, 179, 0.515, 1380}
+            {246, 0.672, 190, 0.624, 1500},
+            {246, 0.672, 190, 0.624, 1400},
+            {246, 0.552, 190, 0.464, 1380},
+            {246, 0.584, 190, 0.504, 1380},
+            {246, 0.608, 190, 0.552, 1380}
     };
     double[][] blueTargets = {
-            {53, 0.425, 247, 0.635, 1500},
-            {53, 0.425, 247, 0.635, 1400},
-            {81, 0.56, 154, 0.635, 1380},
-            {81, 0.59, 154, 0.665, 1380},
-            {81, 0.62, 154, 0.71, 1380}
+            {73, 0.496, 265, 0.696, 1500},
+            {73, 0.496, 265, 0.696, 1400},
+            {73, 0.584, 125, 0.616, 1380},
+            {73, 0.616, 122, 0.648, 1380},
+            {73, 0.640, 125, 0.700, 1380}
     };
     int target = 0;
 
+    boolean LEDSet = true;
 
     //Initialize Hardware That
     //Comes from the Config
@@ -164,6 +174,7 @@ public class RobotHardwareOBV2
         turret.setDirection(Servo.Direction.REVERSE);
         drop = hwMap.get(Servo.class, "drop");
         targetServo = hwMap.get(Servo.class, "targetServo");
+        camera = hwMap.get(Servo.class, "camera");
 
 
         // Set all motors to zero power
@@ -182,6 +193,7 @@ public class RobotHardwareOBV2
         targetServo.setPosition(targetServoPos);
         turretPosition = TURRET_POSITION_STRAIGHT;
         turret.setPosition(turretPosition);
+        camera.setPosition(cameraPos);
 
         // Set all motors to run without encoders
         lf.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -204,6 +216,24 @@ public class RobotHardwareOBV2
         initIMU(hwMap);   // must come after drive motors initialized
 
 
+
+
+        ledr0 = hwMap.get(DigitalChannel.class, "led4");
+        ledr0.setMode(DigitalChannel.Mode.OUTPUT);
+        ledr0.setState(LEDSet);
+        ledg0 = hwMap.get(DigitalChannel.class, "led5");
+        ledg0.setMode(DigitalChannel.Mode.OUTPUT);
+        ledg0.setState(LEDSet);
+
+        ledr1 = hwMap.get(DigitalChannel.class, "led6");
+        ledr1.setMode(DigitalChannel.Mode.OUTPUT);
+        ledr1.setState(LEDSet);
+        ledg1 = hwMap.get(DigitalChannel.class, "led7");
+        ledg1.setMode(DigitalChannel.Mode.OUTPUT);
+        ledg1.setState(LEDSet);
+    }
+
+    public void startTargetingCamera(){
         int cameraMonitorViewId = hwMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hwMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hwMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
         webcam.setPipeline(pipeline);
@@ -214,20 +244,29 @@ public class RobotHardwareOBV2
                 webcam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
             }
         });
+    }
 
-        ledr0 = hwMap.get(DigitalChannel.class, "led4");
-        ledr0.setMode(DigitalChannel.Mode.OUTPUT);
-        ledr0.setState(true);
-        ledg0 = hwMap.get(DigitalChannel.class, "led5");
-        ledg0.setMode(DigitalChannel.Mode.OUTPUT);
-        ledg0.setState(true);
-
-        ledr1 = hwMap.get(DigitalChannel.class, "led6");
-        ledr1.setMode(DigitalChannel.Mode.OUTPUT);
-        ledr1.setState(true);
-        ledg1 = hwMap.get(DigitalChannel.class, "led7");
-        ledg1.setMode(DigitalChannel.Mode.OUTPUT);
-        ledg1.setState(true);
+    public void setAutonCamera(double x){
+        if(x == 1){
+            cameraPos = CAM_RED_OUTTER_POS;
+            camera.setPosition(cameraPos);
+        }
+        else if(x == 2){
+            cameraPos = CAM_RED_INNER_POS;
+            camera.setPosition(cameraPos);
+        }
+        else if(x == 3){
+            cameraPos = CAM_BLUE_OUTTER_POS;
+            camera.setPosition(cameraPos);
+        }
+        else if(x == 4){
+            cameraPos = CAM_BLUE_INNER_POS;
+            camera.setPosition(cameraPos);
+        }
+        else {
+            cameraPos += x;
+            camera.setPosition(cameraPos);
+        }
     }
 
     public void initIMU(HardwareMap hwMap) {
@@ -245,6 +284,11 @@ public class RobotHardwareOBV2
         intakeTimer.reset();
         if (smode == ShootMode.IDLE)
             setShootMode(ShootMode.LOAD);
+    }
+
+    public void stopIntake(){
+        intakePower = 0;
+        conveyorPower = 0;
     }
 
     public void outtake() {
@@ -329,6 +373,7 @@ public class RobotHardwareOBV2
 
         updateWG();
         updateTargetServo();
+        updateLED();
 
         if (intakeTimer.seconds() < 1) conveyorPower = CONVEYOR_POWER_INTAKE;
 
@@ -483,28 +528,45 @@ public class RobotHardwareOBV2
         if (pipeline.isRedVisible() && targetColor == 1) {
             Rect redRect = pipeline.getRedRect();
             Point centerOfRedGoal = pipeline.getCenterofRect(redRect);
-            goalSeen = true;
+            goalWidth = redRect.width;
+            goalSeen = false;
             goalTurn = false;
-            goalPos = centerOfRedGoal.x;
-            return goalPos;
+            goalPos = 0;
+
+            if (redRect.width >= 60 && centerOfRedGoal.x - (0.5*redRect.width) >= 5 && centerOfRedGoal.x + (0.5*redRect.width) <= 315){
+                goalSeen = true;
+                goalTurn = false;
+                goalPos = centerOfRedGoal.x;
+            }
         }
-        if (pipeline.isBlueVisible() && targetColor == 2) {
+        else if (pipeline.isBlueVisible() && targetColor == 2) {
             Rect blueRect = pipeline.getBlueRect();
             Point centerOfBlueGoal = pipeline.getCenterofRect(blueRect);
-            goalSeen = true;
+            goalWidth = blueRect.width;
+            goalSeen = false;
             goalTurn = false;
-            goalPos = centerOfBlueGoal.x;
-            return goalPos;
+            goalPos = 0;
+
+            if (blueRect.width >= 60 && centerOfBlueGoal.x - (0.5*blueRect.width) >= 5 && centerOfBlueGoal.x + (0.5*blueRect.width) <= 315){
+                goalSeen = true;
+                goalTurn = false;
+                goalPos = centerOfBlueGoal.x;
+            }
         }
         else{
-             goalPos = 0;
-             goalSeen = false;
-             goalTurn = true;
-             return goalPos;
+            goalPos = 0;
+            goalSeen = false;
+            goalTurn = true;
         }
+
+        return goalPos;
     }
 
     public double getTargetPos(double x){
+
+        if(x == 0){
+            return turretPosition;
+        }
 
         if(targetColor == 1) {
             double slope = (redTargets[target][1] - redTargets[target][3])/(redTargets[target][0] - redTargets[target][2]);
@@ -524,7 +586,7 @@ public class RobotHardwareOBV2
             return returnPos;
         }
 
-        return TURRET_POSITION_STRAIGHT;
+        return turretPosition;
 
     }
 
@@ -551,6 +613,31 @@ public class RobotHardwareOBV2
 
     public void setTarget(int x){
         target = x;
+    }
+
+    public void updateLED(){
+        boolean red = true;      // default led4 (red) off
+        boolean grn = true;      // default led5 (green) off
+
+        if(targetColor == 3){
+            goalSeen = false;
+        }
+
+        if (goalSeen) grn = false;
+        else red = false;
+
+        if (ledr0.getState() != red) ledr0.setState(red);
+        if (ledr1.getState() != red) ledr1.setState(red);
+        if (ledg0.getState() != grn) ledg0.setState(grn);
+        if (ledg1.getState() != grn) ledg1.setState(grn);
+    }
+
+    public void autoFire(){
+        fire();
+        while(smode != ShootMode.LOAD){
+            updateAll();
+        }
+        telemetry.update();
     }
 
 

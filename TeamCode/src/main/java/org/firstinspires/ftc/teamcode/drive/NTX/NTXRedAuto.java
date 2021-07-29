@@ -320,7 +320,6 @@ public class NTXRedAuto extends LinearOpMode
 
         robot.setFireVelocity(1580);
         robot.shooter(1580);
-        robot.setArms(false);
 
         drive.followTrajectory(move1);
 

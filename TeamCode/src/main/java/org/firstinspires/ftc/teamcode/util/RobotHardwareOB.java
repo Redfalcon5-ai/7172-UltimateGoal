@@ -34,13 +34,13 @@ public class RobotHardwareOB
     public final double INDEXER_POSITION_OFF = 0.5;
     public final double INDEXER_POSITION_LOAD = 0.5;
     public final double INDEXER_POSITION_FIRE = 0.0;
-    public final double SHOOTER_VELOCITY_HIGH = 1540;
+    public final double SHOOTER_VELOCITY_HIGH = 1520;
     public final double SHOOTER_VELOCITY_MID = 1360;
     public final double SHOOTER_VELOCITY_PSHOT = 1380;
     public final double SHOOTER_VELOCITY_OFF = 0;
     public final double SHOOTER_VELOCITY_NORMAL = 1520;     // deprecated
     public final double SHOOTER_VELOCITY_LOW = 1360;        // deprecated
-    public final double GRABBER_POSITION_CLOSE = 0.0125;
+    public final double GRABBER_POSITION_CLOSE = 0.025;
     public final double GRABBER_POSITION_OPEN = 0.85;
     public final double WOBBLE_VELOCITY_STOW = -700;
     public final double WOBBLE_VELOCITY_FLIP = 700;
@@ -55,6 +55,9 @@ public class RobotHardwareOB
     public final double CHASSIS_PSHOT_FAR = 0.720;      // offset for pshot away from tower goal
     public final double DROP_DOWN_POS = 0.4;
     public final double DROP_UP_POS = 0.6;
+    public final double WHEELS_OFF = 0;
+    public final double WHEELS_IN = 1;
+    public final double WHEELS_OUT = -1;
 
     public final double TARGETS[][] = {
             // red targets (flyvelocity, pixy_a, pixy_b, turret_a, turret_b, pixy_c)
@@ -107,6 +110,10 @@ public class RobotHardwareOB
     public NormalizedColorSensor colorv3 = null;
     public DcMotorEx wobble = null;
     public Servo grabber = null;
+    public Servo targetServo = null;
+
+    public Servo wheel1 = null;
+    public Servo wheel2 = null;
 
     public Servo larm = null;
     public Servo rarm = null;
@@ -173,7 +180,10 @@ public class RobotHardwareOB
         turret = hwMap.get(Servo.class, "turret");
         turret.setDirection(Servo.Direction.REVERSE);
         drop = hwMap.get(Servo.class, "drop");
+        targetServo = hwMap.get(Servo.class, "target");
 
+        wheel1 = hwMap.get(Servo.class, "wheel1");
+        wheel2 = hwMap.get(Servo.class, "wheel2");
 
         lrange = hwMap.get(AnalogInput.class, "lrange");
         rpixy = new Pixy2();
@@ -196,6 +206,8 @@ public class RobotHardwareOB
         indexer.setPosition(INDEXER_POSITION_LOAD);
         shooter1.setPower(0);
         wobble.setPower(0);
+        wheel1.setPosition(0.5);
+        wheel2.setPosition(0.5);
         grabber.setPosition(GRABBER_POSITION_OPEN);
 
         // Set all motors to run without encoders
@@ -449,6 +461,8 @@ public class RobotHardwareOB
     public void setTarget(int pixy, int t) {
         double targetrow[] = TARGETS[t];
         shootTarget = t;
+        targetServo.setPosition(0.07+t*0.14);
+
         if (pixy > 0) {
             activePixy = bpixy;
             shootTarget = t + 8;
@@ -479,7 +493,7 @@ public class RobotHardwareOB
                 turretPosition = turretBase + (v - turretVolt) * turretMult + turretAdjust;
         }
         turretPosition = Range.clip(turretPosition, TURRET_POSITION_MIN, TURRET_POSITION_MAX);
-        turret.setPosition(turretPosition + 0.0225);
+        turret.setPosition(turretPosition + 0.01125);
     }
 
     // drive robot forward/strafe, maintain heading of pixy center
