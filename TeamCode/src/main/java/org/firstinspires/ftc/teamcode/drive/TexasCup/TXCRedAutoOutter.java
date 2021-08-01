@@ -31,7 +31,7 @@ import java.util.Arrays;
 
 import static org.firstinspires.ftc.teamcode.util.RobotHardwareOB.ShootMode.LOAD;
 
-
+@Disabled
 @Autonomous(name="TXCRedAutoOutter", group="TXCRedAuto")
 public class TXCRedAutoOutter extends LinearOpMode
 {

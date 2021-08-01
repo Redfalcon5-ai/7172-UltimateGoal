@@ -20,6 +20,7 @@ public class MTIOpBlue extends LinearOpMode {
     @Override
     public void runOpMode() {
         robot.init(hardwareMap);
+
         robot.rf.setDirection(DcMotorSimple.Direction.FORWARD);
         robot.rb.setDirection(DcMotorSimple.Direction.FORWARD);
         robot.lf.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -32,13 +33,15 @@ public class MTIOpBlue extends LinearOpMode {
         boolean bLast = false;
         boolean xLast = false;
         
-        boolean wgflip = false;
+        boolean wgstow = false;
         boolean wgopen = false;
         
         boolean dpadLast = false;
         boolean backLast = false;
         
         boolean armDown = false;
+
+        robot.dropDown();
         
         waitForStart();
         telemetry.log().setCapacity(16);
@@ -62,6 +65,9 @@ public class MTIOpBlue extends LinearOpMode {
             } else {
                 robot.driveYXW(jy, jx, jw);
             }
+
+            if(gpad.dpad_right && !gpad.x) robot.dropDown();
+            if(gpad.dpad_left && !gpad.x) robot.dropUp();
 
             //Set Heading
             if (gpad.y) {
@@ -100,9 +106,9 @@ public class MTIOpBlue extends LinearOpMode {
             //Wobble Goal Controls
             boolean aThis = gpad.a;
             if (aThis && !aLast) {
-                wgflip = !wgflip;
-                if (wgflip) robot.wgFlip();
-                else robot.wgStow();
+                wgstow = !wgstow;
+                if (wgstow) robot.wgStow();
+                else robot.wgFlip();
             }
             aLast = aThis;
             

@@ -36,13 +36,15 @@ public class MTIOpRed extends LinearOpMode {
         boolean bLast = false;
         boolean xLast = false;
         
-        boolean wgflip = false;
+        boolean wgstow = false;
         boolean wgopen = false;
         
         boolean dpadLast = false;
         boolean backLast = false;
         
         boolean armDown = false;
+
+        robot.dropDown();
         
         waitForStart();
         telemetry.log().setCapacity(16);
@@ -66,6 +68,9 @@ public class MTIOpRed extends LinearOpMode {
             } else {
                 robot.driveYXW(jy, jx, jw);
             }
+
+            if(gpad.dpad_right && !gpad.x) robot.dropDown();
+            if(gpad.dpad_left && !gpad.x) robot.dropUp();
 
             //Set Heading
             if (gpad.y) {
@@ -104,9 +109,9 @@ public class MTIOpRed extends LinearOpMode {
             //Wobble Goal Controls
             boolean aThis = gpad.a;
             if (aThis && !aLast) {
-                wgflip = !wgflip;
-                if (wgflip) robot.wgFlip();
-                else robot.wgStow();
+                wgstow = !wgstow;
+                if (wgstow) robot.wgStow();
+                else robot.wgFlip();
             }
             aLast = aThis;
             

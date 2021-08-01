@@ -261,7 +261,7 @@ public class MTIRedAutoOutter extends LinearOpMode
 
         Trajectory move3 = drive.trajectoryBuilder(drive.getPoseEstimate())
                 .lineToLinearHeading(
-                        new com.acmerobotics.roadrunner.geometry.Pose2d(-43, -60, Math.toRadians(0)),
+                        new com.acmerobotics.roadrunner.geometry.Pose2d(-43, -55, Math.toRadians(0)),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),

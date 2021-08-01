@@ -29,7 +29,7 @@ import java.util.Arrays;
 
 import static org.firstinspires.ftc.teamcode.util.RobotHardwareOB.ShootMode.LOAD;
 
-
+@Disabled
 @Autonomous(name="TXCBlueAutoOutter", group="TXCRedAuto")
 public class TXCBlueAutoOutter extends LinearOpMode
 {

@@ -94,6 +94,7 @@ public class RobotHardwareOBV2
     public Servo grabber = null;
     public Servo targetServo = null;
     public Servo camera = null;
+    public Servo colorServo = null;
 
     public DigitalChannel ledr0 = null;
     public DigitalChannel ledr1 = null;
@@ -175,7 +176,7 @@ public class RobotHardwareOBV2
         drop = hwMap.get(Servo.class, "drop");
         targetServo = hwMap.get(Servo.class, "targetServo");
         camera = hwMap.get(Servo.class, "camera");
-
+        colorServo = hwMap.get(Servo.class, "target");
 
         // Set all motors to zero power
         //Set servos to starting position
@@ -244,6 +245,18 @@ public class RobotHardwareOBV2
                 webcam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
             }
         });
+    }
+
+    public void updateColorServo(){
+        if(targetColor == 1){
+            colorServo.setPosition(0);
+        }
+        else if(targetColor == 2){
+            colorServo.setPosition(0.67);
+        }
+        else{
+            colorServo.setPosition(1);
+        }
     }
 
     public void setAutonCamera(double x){
@@ -374,6 +387,7 @@ public class RobotHardwareOBV2
         updateWG();
         updateTargetServo();
         updateLED();
+        updateColorServo();
 
         if (intakeTimer.seconds() < 1) conveyorPower = CONVEYOR_POWER_INTAKE;
 
@@ -564,20 +578,20 @@ public class RobotHardwareOBV2
 
     public double getTargetPos(double x){
 
-        if(x == 0){
+        if(goalSeen == false){
             return turretPosition;
         }
 
-        if(targetColor == 1) {
+        else if(targetColor == 1 && x != 0 && goalSeen) {
             double slope = (redTargets[target][1] - redTargets[target][3])/(redTargets[target][0] - redTargets[target][2]);
             double yIntercept = redTargets[target][1] - slope*redTargets[target][0];
             setFireVelocity(redTargets[target][4]);
-            double returnPos = slope*x + yIntercept;
+            double returnPos = slope*x + yIntercept - 0.016;
 
             return returnPos;
         }
 
-        if(targetColor == 2) {
+        else if(targetColor == 2 && x != 0 && goalSeen) {
             double slope = (blueTargets[target][1] - blueTargets[target][3])/(blueTargets[target][0] - blueTargets[target][2]);
             double yIntercept = blueTargets[target][1] - slope*blueTargets[target][0];
             setFireVelocity(blueTargets[target][4]);
@@ -639,11 +653,6 @@ public class RobotHardwareOBV2
         }
         telemetry.update();
     }
-
-
-
-
-
 }
 
 

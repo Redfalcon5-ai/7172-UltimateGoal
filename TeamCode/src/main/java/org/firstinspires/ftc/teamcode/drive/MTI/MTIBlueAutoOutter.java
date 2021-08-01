@@ -14,6 +14,7 @@ import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.util.RingDeterminationPipeline;
 import org.firstinspires.ftc.teamcode.util.RingDeterminationPipeline2;
+import org.firstinspires.ftc.teamcode.util.RingDeterminationPipeline3;
 import org.firstinspires.ftc.teamcode.util.RobotHardwareOBV2;
 import org.firstinspires.ftc.teamcode.util.RobotHardwareOBV2.ShootMode;
 import org.openftc.easyopencv.OpenCvCamera;
@@ -32,7 +33,7 @@ public class MTIBlueAutoOutter extends LinearOpMode
 
     //OpenCV stuff
     RingDeterminationPipeline2 rings   = new RingDeterminationPipeline2();
-    RingDeterminationPipeline.SkystoneDeterminationPipeline pipeline = new RingDeterminationPipeline.SkystoneDeterminationPipeline();
+    RingDeterminationPipeline3.SkystoneDeterminationPipeline pipeline = new RingDeterminationPipeline3.SkystoneDeterminationPipeline();
     OpenCvCamera webcam;
 
     @Override
@@ -46,7 +47,7 @@ public class MTIBlueAutoOutter extends LinearOpMode
         //Start OpenCV
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 2"), cameraMonitorViewId);
-        pipeline = new RingDeterminationPipeline.SkystoneDeterminationPipeline();
+        pipeline = new RingDeterminationPipeline3.SkystoneDeterminationPipeline();
         webcam.setPipeline(pipeline);
         webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
                                          @Override
@@ -108,7 +109,7 @@ public class MTIBlueAutoOutter extends LinearOpMode
         //One ring trajectories
         Trajectory one1 = drive.trajectoryBuilder(move2.end())
                 .lineToLinearHeading(
-                        new com.acmerobotics.roadrunner.geometry.Pose2d(30, 25, Math.toRadians(0)),
+                        new com.acmerobotics.roadrunner.geometry.Pose2d(25, 25, Math.toRadians(0)),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -167,13 +168,13 @@ public class MTIBlueAutoOutter extends LinearOpMode
                 ringsSet = false;
             }
 
-            if(pipeline.position == RingDeterminationPipeline.SkystoneDeterminationPipeline.RingPosition.FOUR && !ringsSet){
+            if(pipeline.position == RingDeterminationPipeline3.SkystoneDeterminationPipeline.RingPosition.FOUR && !ringsSet){
                 rings = 4;
             }
-            else if(pipeline.position == RingDeterminationPipeline.SkystoneDeterminationPipeline.RingPosition.ONE && !ringsSet){
+            else if(pipeline.position == RingDeterminationPipeline3.SkystoneDeterminationPipeline.RingPosition.ONE && !ringsSet){
                 rings = 1;
             }
-            else if(pipeline.position == RingDeterminationPipeline.SkystoneDeterminationPipeline.RingPosition.NONE && !ringsSet){
+            else if(pipeline.position == RingDeterminationPipeline3.SkystoneDeterminationPipeline.RingPosition.NONE && !ringsSet){
                 rings = 0;
             }
 
@@ -261,7 +262,7 @@ public class MTIBlueAutoOutter extends LinearOpMode
 
         Trajectory move3 = drive.trajectoryBuilder(drive.getPoseEstimate())
                 .lineToLinearHeading(
-                        new com.acmerobotics.roadrunner.geometry.Pose2d(-36, 56, Math.toRadians(0)),
+                        new com.acmerobotics.roadrunner.geometry.Pose2d(-43, 56, Math.toRadians(0)),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -274,7 +275,7 @@ public class MTIBlueAutoOutter extends LinearOpMode
 
         Trajectory move4 = drive.trajectoryBuilder(move3.end())
                 .lineToLinearHeading(
-                        new com.acmerobotics.roadrunner.geometry.Pose2d(-36, 29, Math.toRadians(0)),
+                        new com.acmerobotics.roadrunner.geometry.Pose2d(-43, 29, Math.toRadians(0)),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -382,7 +383,7 @@ public class MTIBlueAutoOutter extends LinearOpMode
 
         Trajectory move7 = drive.trajectoryBuilder(drive.getPoseEstimate())
                 .lineToLinearHeading(
-                        new com.acmerobotics.roadrunner.geometry.Pose2d(12, 30, Math.toRadians(0)),
+                        new com.acmerobotics.roadrunner.geometry.Pose2d(6, 30, Math.toRadians(0)),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
